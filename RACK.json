@@ -1,0 +1,38 @@
+[
+    {
+        "id":"SmartRack02",
+        "uniqueName":"SmartRack02",
+        "layoutType":"default",
+        "layoutName":"",
+        "docType":"LayoutDefinition",
+        "Levels":["Level_1"],
+        "cellParams":
+        [
+            {"cellName":"Cell01","deviceID":"000616"},
+            {"cellName":"Cell02","deviceID":"000614"},
+            {"cellName":"Cell03","deviceID":"000610"},
+            {"cellName":"Cell04","deviceID":"000617"},
+            {"cellName":"Cell05","deviceID":"000608"},
+            {"cellName":"Cell06","deviceID":"000611"},
+            {"cellName":"Cell07","deviceID":"000612"},
+            {"cellName":"Cell08","deviceID":"000615"},
+            {"cellName":"Cell09", "deviceID":"000613"}
+        ],
+        
+    "LevelParams":{"Level_1":
+        {"type":"grid","levelHeight":"1","rows":"3","cols":"3","bgColor":"pink","cellNum":"9",
+        "cells":[
+                {"cellName":"Cell01","uniqueName":"Cell01","label":"Cell01","index":"0","deviceID":"000616","Row":"0","Col":"0"},
+                {"cellName":"Cell02","uniqueName":"Cell02","label":"Cell02","index":"1","deviceID":"000614","Row":"0","Col":"1"},
+                {"cellName":"Cell03","uniqueName":"Cell03","label":"Cell03","index":"2","deviceID":"000610","Row":"0","Col":"2"},
+                {"cellName":"Cell04","uniqueName":"Cell04","label":"Cell04","index":"3","deviceID":"000617","Row":"1","Col":"0"},
+                {"cellName":"Cell05","uniqueName":"Cell05","label":"Cell05","index":"4","deviceID":"000608","Row":"1","Col":"1"},
+                {"cellName":"Cell06","uniqueName":"Cell06","label":"Cell06","index":"5","deviceID":"000611","Row":"1","Col":"2"},
+                {"cellName":"Cell07","uniqueName":"Cell07","label":"Cell07","index":"6","deviceID":"000612","Row":"2","Col":"0"},
+                {"cellName":"Cell08","uniqueName":"Cell08","label":"Cell08","index":"7","deviceID":"000615","Row":"2","Col":"1"},
+                {"cellName":"Cell09","uniqueName":"Cell09","label":"Cell09","index":"8","deviceID":"000613","Row":"2","Col":"2"}
+                ]
+        }
+    }
+}
+]

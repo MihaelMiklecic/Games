@@ -1,0 +1,23 @@
+[
+    {
+        "MSGTime": 45646.6648579514,
+        "DeviceID": "000616",
+        "WStat": "4",
+        "b_IsChangeExpected": false,
+        "ArtWeightMj": 3.49,
+        "Value": "10",
+        "ExpectedValue": "0",
+        "d_ZeroOperValue": 6.51,
+        "Tolerance": 0.01,
+        "Error": "",
+        "ErrorCode": "0",
+        "s_ContainerBarcode": "00385888903030771687",
+        "PCB": "10.0.10.132",
+        "Channel": "1",
+        "ReadValue": "10",
+        "CalMode": "",
+        "DateTime": "",
+        "ZeroVal": "",
+        "b_Disabled": false
+    }
+]
