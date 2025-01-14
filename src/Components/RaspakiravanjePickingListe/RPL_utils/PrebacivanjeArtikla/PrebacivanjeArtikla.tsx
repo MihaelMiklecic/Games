@@ -21,7 +21,6 @@ interface Kontejner {
   QTY: number;
   MATNR: string;
   WEIGHT: number;
-  TotalWeight: number;
 }
 
 export default function PrebacivanjeArtikla() {
@@ -61,11 +60,10 @@ export default function PrebacivanjeArtikla() {
           SRCC: item.SRCC,
           MATNR: item.MATNR,
           QTY: item.QTY, 
-          WEIGHT: item.WEIGHT, 
-          TotalWeight: (parseFloat(item.WEIGHT.toString()) * parseFloat(item.QTY.toString())),
+          WEIGHT: item.WEIGHT,
+         TotalWeight: Number("0.1") * item.QTY
         }));
-        console.log("Data Weight: ", data)
-        console.log("Mapped data with weights:", mappedData);
+        console.log("Mapped data:", mappedData);
         setRows(mappedData);
         setRowsDest([]);
       })
