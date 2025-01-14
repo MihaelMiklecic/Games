@@ -43,7 +43,7 @@ export const RPL_Header = () => {
             component="div"
             sx={{ flexGrow: 1, textAlign: "center" }}
           >
-            Raspakiravanje Liste
+            {t("raspakiravanje_liste")}
           </Typography>
 
           <Typography variant="body1">

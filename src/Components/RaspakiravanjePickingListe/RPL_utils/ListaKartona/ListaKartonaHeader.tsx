@@ -42,7 +42,7 @@ export const ListaKartonaHeader = () => {
             component="div"
             sx={{ flexGrow: 1, textAlign: "center" }}
           >
-            Lista Kartona
+            {t("lista_kartona")}
           </Typography>
 
           <Typography variant="body1">

@@ -5,6 +5,8 @@ import { RPL_Header } from "./RPL_utils/RPL_Header";
 import useBarcodeScannerStore from "../useBarcodeScannerStore";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
+import { useTranslation } from "react-i18next";
+
 interface Data {
   DOCID: string;
   DOCNAME: string;
@@ -19,7 +21,8 @@ export const RaspakiravanjePickingListe = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [, setSelectedRow] = useState<Data | null>(null);
   const navigate = useNavigate();
-
+  const {t} = useTranslation();
+  
   const prebacivanjeNaListuKartona = ( ) => {
     localStorage.setItem(`ParentID${data[1].DOCID}` , data[1].UID);
     console.log("Setted ParentID in localStorage: ", data[1].UID);
@@ -63,14 +66,14 @@ export const RaspakiravanjePickingListe = () => {
     { field: "SRCC", headerName: "SRCC", width: 100 },
     {
       field: "actions",
-      headerName: "Akcije",
+      headerName: t("AKCIJE"),
       width: 250,
       renderCell: (params: GridRenderCellParams<Data>) => (
         <Button
           variant="contained"
           onClick={() => handleOpenDialog(params.row)}
         >
-          AKCIJE
+          {t("AKCIJE")}
         </Button>
       ),
     },

@@ -3,7 +3,7 @@ import { ListaKartonaHeader } from "./ListaKartonaHeader";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-
+import { useTranslation } from "react-i18next";
 interface Data {
   ParentID: string;
   UID: string;
@@ -16,7 +16,8 @@ interface Data {
 export default function ListaKartona() {
   const [data, setData] = useState<Data[]>([]);
   const navigate = useNavigate();
-
+  const {t} = useTranslation();
+  
   useEffect(() => {
     const UIDdata = localStorage.getItem("ParentID64429942");
     console.log("ParentID from localStorage: ", UIDdata);
@@ -77,7 +78,7 @@ export default function ListaKartona() {
         sx={{ position: "absolute", bottom: 0, width: "100%", height: "60px" }}
         onClick={noviKarton}
       >
-        kreiraj novi karton
+        {t("kreiraj_novi_karton")}
       </Button>
     </Container>
   );

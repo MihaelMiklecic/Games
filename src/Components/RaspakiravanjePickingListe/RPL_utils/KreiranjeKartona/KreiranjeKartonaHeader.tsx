@@ -42,7 +42,7 @@ export const KreiranjeKartonaHeader = () => {
             component="div"
             sx={{ flexGrow: 1, textAlign: "center" }}
           >
-            Kreiranje Kartona
+            {t("kreiranje_kartona")}
           </Typography>
 
           <Typography variant="body1">

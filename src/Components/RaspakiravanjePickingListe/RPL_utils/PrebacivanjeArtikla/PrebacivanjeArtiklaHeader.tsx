@@ -42,7 +42,7 @@ export const PrebacivanjeArtiklaHeader = () => {
             component="div"
             sx={{ flexGrow: 1, textAlign: "center" }}
           >
-            Prebacivanje Artikla
+            {t("prebacivanje_artikla")}
           </Typography>
 
           <Typography variant="body1">

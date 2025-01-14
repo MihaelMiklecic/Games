@@ -51,5 +51,22 @@
     "skenirano" : "Scanned",
     "reset" : "Reseted",
     "resetAll" : "Reset all",
-    "deleteList" : "Delete list" 
+    "deleteList" : "Delete list",
+    "tip_kutije" : "Chose box type",
+    "tip" : "Type",
+    "sken_ssc" : "Scan SSCC code",
+    "uneseni_ssc" : "Input SSCC code",
+    "kreiranje_kartona" : "Box Creating",
+    "kreiraj" : "Create",
+    "kreiraj_novi_karton" : "Create new box",
+    "lista_kartona" : "Box list",
+    "prebacivanje" : "Transfer",
+    "kontejner" : "Box",
+    "potvrdi" : "Confirm",
+    "prebacuj_iz" : "You are about to transfer item:",
+    "kolicina" : "Quantity :",
+    "odustani" : "Cancel",
+    "dostupna_kolicina" : "Available quantity :",
+    "prebacivanje_artikla" : "Item transfer",
+    "raspakiravanje_liste" : "Picking list unloading"
 }

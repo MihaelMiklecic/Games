@@ -13,12 +13,15 @@ import { PrebacivanjeArtiklaHeader } from "./PrebacivanjeArtiklaHeader";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import useBarcodeScannerStore from "../../../useBarcodeScannerStore";
+import { useTranslation } from "react-i18next";
 
 interface Kontejner {
   UID: string;
   SRCC: string;
   QTY: number;
   MATNR: string;
+  WEIGHT: number;
+  TotalWeight: number;
 }
 
 export default function PrebacivanjeArtikla() {
@@ -30,6 +33,7 @@ export default function PrebacivanjeArtikla() {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<Kontejner | null>(null);
   const [transferQty, setTransferQty] = useState<number>(0);
+  const { t } = useTranslation();
 
   useEffect(() => {
     startReading();
@@ -56,20 +60,28 @@ export default function PrebacivanjeArtikla() {
           UID: item.UID,
           SRCC: item.SRCC,
           MATNR: item.MATNR,
-          QTY: item.QTY,
+          QTY: item.QTY, 
+          WEIGHT: item.WEIGHT, 
+          TotalWeight: (parseFloat(item.WEIGHT.toString()) * parseFloat(item.QTY.toString())),
         }));
+        console.log("Data Weight: ", data)
+        console.log("Mapped data with weights:", mappedData);
         setRows(mappedData);
         setRowsDest([]);
-      });
+      })
+      .catch((error) => console.error("Error fetching Artikli.json:", error));
   }, []);
+  
 
   useEffect(() => {
     if (destKontejner) {
       localStorage.setItem("NoviKarton_" + destKontejner, destKontejner);
     }
-
     if (rowsDest.length > 0) {
-      localStorage.setItem("RowsDest_" + destKontejner, JSON.stringify(rowsDest));
+      localStorage.setItem(
+        "RowsDest_" + destKontejner,
+        JSON.stringify(rowsDest)
+      );
     }
   }, [destKontejner, rowsDest]);
 
@@ -89,7 +101,10 @@ export default function PrebacivanjeArtikla() {
 
       const rowsAfterTransfer = updatedRows.filter((item) => item.QTY > 0);
 
-      const existingDestRow = rowsDest.find((item) => item.UID === selectedRow.UID);
+      const existingDestRow = rowsDest.find(
+        (item) => item.UID === selectedRow.UID
+      );
+
       if (existingDestRow) {
         setRowsDest((prevRows) =>
           prevRows.map((item) =>
@@ -104,9 +119,41 @@ export default function PrebacivanjeArtikla() {
           { ...selectedRow, QTY: transferQty },
         ]);
       }
+
       setRows(rowsAfterTransfer);
     }
     setOpenDialog(false);
+  };
+
+  const handleUndo = () => {
+    if (selectedRow) {
+      const updatedRowsDest = rowsDest
+        .map((item) =>
+          item.UID === selectedRow.UID
+            ? { ...item, QTY: item.QTY - transferQty }
+            : item
+        )
+        .filter((item) => item.QTY > 0);
+
+      const existingSrcRow = rows.find((item) => item.UID === selectedRow.UID);
+
+      if (existingSrcRow) {
+        setRows((prevRows) =>
+          prevRows.map((item) =>
+            item.UID === selectedRow.UID
+              ? { ...item, QTY: item.QTY + transferQty }
+              : item
+          )
+        );
+      } else {
+        setRows((prevRows) => [
+          ...prevRows,
+          { ...selectedRow, QTY: transferQty },
+        ]);
+      }
+
+      setRowsDest(updatedRowsDest);
+    }
   };
 
   const handleQtyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,49 +163,70 @@ export default function PrebacivanjeArtikla() {
     }
   };
 
+  const handleSave = () =>{
+    localStorage.setItem("NoviKartonArtikli_" + destKontejner, JSON.stringify(rowsDest));
+  }
   const columns: GridColDef[] = [
-    { field: "MATNR", headerName: "MATNR", width: 300 },
-    { field: "QTY", headerName: "QTY", width: 300 },
+    { field: "MATNR", headerName: "MATNR", width: 100 },
+    { field: "WEIGHT", headerName: "WEIGHT", width: 100 },
+    { field: "QTY", headerName: "QTY", width: 100 },
+    { field: "TotalWeight", headerName: "TotalWeight", width: 100 },
     {
       field: "actions",
       headerName: "Actions",
-      width: 200,
+      width: 150,
       renderCell: (params) => (
         <Button
           variant="contained"
           color="primary"
           onClick={() => handleOpenDialog(params.row)}
         >
-          Prebacivanje
+          {t("prebacivanje")}
         </Button>
       ),
     },
   ];
 
   const columns1: GridColDef[] = [
-    { field: "MATNR", headerName: "MATNR", width: 300 },
-    { field: "QTY", headerName: "QTY", width: 300 },
+    { field: "MATNR", headerName: "MATNR", width: 100 },
+    { field: "QTY", headerName: "QTY", width: 100 },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 150,
+      renderCell: () => (
+        <Button variant="contained" color="primary" onClick={handleUndo}>
+          UNDO
+        </Button>
+      ),
+    },
   ];
 
-  return (
+  return (<>
     <Container
       sx={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        flexDirection: "column",
+        flexDirection: "space-between",
+        gap: 2,
       }}
     >
       <PrebacivanjeArtiklaHeader />
       <Box>
         <Typography variant="h4" sx={{ marginTop: 10 }}>
-          SRC Kontejner: {srcKontejner}
+          SRC {t("kontejner")}: {srcKontejner}
         </Typography>
-        <DataGrid rows={rows} columns={columns} getRowId={(row) => row.UID} />
+        <DataGrid 
+          rows={rows} 
+          columns={columns} 
+          getRowId={(row) => row.UID} 
+        />
       </Box>
       <Box>
-        <Typography variant="h4" sx={{ width: "auto", marginTop: 5 }}>
-          DEST Kontejner: {destKontejner ? destKontejner : "No data found"}
+        <Typography variant="h4" sx={{ width: "auto", marginTop: 10 }}>
+          DEST {t("kontejner")}:{" "}
+          {destKontejner ? destKontejner : "No data found"}
         </Typography>
         <DataGrid
           rows={rowsDest}
@@ -168,33 +236,37 @@ export default function PrebacivanjeArtikla() {
       </Box>
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Confirm Transfer</DialogTitle>
+        <DialogTitle>{t("potvrdi")}</DialogTitle>
         <DialogContent>
           <Typography>
-            You are about to transfer items from {selectedRow?.MATNR}.
+            {t("prebacuj_iz")} {selectedRow?.MATNR}.
           </Typography>
           <TextField
-            label="Quantity to Transfer"
+            label={t("kolicina")}
             type="number"
             value={transferQty}
             onChange={handleQtyChange}
             fullWidth
             margin="normal"
-            inputProps={{ min: 0 }}
+            inputProps={{ min: 1, max: selectedRow?.QTY }}
           />
           <Typography variant="body2">
-            Available Quantity: {selectedRow?.QTY}
+            {t("dostupna_kolicina")} {selectedRow?.QTY}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)} variant="contained">
-            Cancel
+            {t("odustani")}
           </Button>
           <Button onClick={handleConfirmTransfer} variant="contained">
-            Confirm Transfer
+            {t("potvrdi")}
           </Button>
         </DialogActions>
       </Dialog>
     </Container>
+    <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+      <Button variant="contained" onClick={handleSave} >{t("spremi")}</Button>
+    </Box>
+    </>
   );
 }

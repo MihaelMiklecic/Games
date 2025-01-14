@@ -10,6 +10,7 @@ import Dropdown from "../../../Utilities/Dropdown";
 import { useState, useMemo, useEffect } from "react";
 import useBarcodeScannerStore from "../../../useBarcodeScannerStore";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export default function KreiranjeKartona() {
   const [dropdown1, setDropdown1] = useState<string>("");
@@ -17,6 +18,7 @@ export default function KreiranjeKartona() {
     useBarcodeScannerStore();
   const navigate = useNavigate();
   const [manualInputValue, setManualInputValue] = useState<string>(""); 
+  const { t } = useTranslation();
 
   const handleKreiraj = () => {
     if(receivedData){
@@ -60,19 +62,19 @@ export default function KreiranjeKartona() {
     >
       <KreiranjeKartonaHeader />
       <Typography variant="h4" sx={{ marginTop: 5 }}>
-        Odaberi tip kutije
+        {t("tip_kutije")}
       </Typography>
       <Dropdown
-        label={"TIP"}
+        label={t("tip")}
         value={dropdown1}
         onChange={handleDropdownChange(setDropdown1)}
         options={dropdownOptions1}
       />
       <Typography variant="h4" sx={{ marginTop: 5 }}>
-        Skeniraj SSCC kod
+        {t("sken_ssc")}
       </Typography>
       <TextField fullWidth disabled value={receivedData}></TextField>
-      <Typography sx={{ marginTop: 5 }}>Skenirani/uneseni SSCC kod</Typography>
+      <Typography sx={{ marginTop: 5 }}>{t("uneseni_ssc")}</Typography>
       <TextField fullWidth 
                   value={manualInputValue}
                   onChange={(e)=>setManualInputValue(e.target.value)} ></TextField>
@@ -81,7 +83,7 @@ export default function KreiranjeKartona() {
         onClick={handleKreiraj}
         sx={{ position: "absolute", bottom: 0, width: "100%", height: "60px" }}
       >
-        kreiraj
+        {t("kreiraj")}
       </Button>
     </Container>
   );
