@@ -3,44 +3,52 @@ import { ListaKartonaHeader } from "./ListaKartonaHeader";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-//import useBarcodeScannerStore from "../../../useBarcodeScannerStore";
 
-  interface Data {
-    UID: string;
-    MATNR: string;
-    QTY: string;
-    collectedVal: boolean | string;
-    GTIN13: boolean | string;
+interface Data {
+  ParentID: string;
+  UID: string;
+  SRCC: string;
+  QTY: string;
+  GTIN13: boolean | string;
+  MATNR: string;
 }
 
 export default function ListaKartona() {
   const [data, setData] = useState<Data[]>([]);
   const navigate = useNavigate();
 
- useEffect(() => {
-    const savedData = localStorage.getItem("filteredData");
-    if (savedData) {
-      setData(JSON.parse(savedData));
-    } else {
-      fetch("/ListaPickingListi.json")
-        .then((response) => response.json())
+  useEffect(() => {
+    const UIDdata = localStorage.getItem("ParentID64429942");
+    console.log("ParentID from localStorage: ", UIDdata);
+
+    if (UIDdata) {
+      fetch("/ListaArtikala.json")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
         .then((fetchedData) => {
-          const mappedData = fetchedData.map((item: any) => ({
+          const filteredData = fetchedData.filter((item: any) => item.ParentID === UIDdata);
+          const mappedData = filteredData.map((item: any) => ({
             UID: item.UID,
+            SRCC: item.SRCC,
             MATNR: item.MATNR,
             QTY: item.QTY,
-            collectedVal: item.collectedVal || "0",
             GTIN13: item.GTIN13 || "0",
           }));
-          setData(mappedData);        })
+          setData(mappedData);
+          localStorage.setItem(`kartoni_${UIDdata}`, JSON.stringify(mappedData));
+        })
         .catch((error) => console.error("Error fetching data:", error));
     }
   }, []);
 
-
   const noviKarton = () => {
     navigate("/kreiranje-kartona");
   };
+
   return (
     <Container
       sx={{
@@ -54,13 +62,14 @@ export default function ListaKartona() {
       <Box>
         <DataGrid
           columns={[
-            { field: 'UID', headerName: 'UID', width: 150 },
-            { field: 'MATNR', headerName: 'Material Number', width: 150 },
-            { field: 'QTY', headerName: 'Quantity', width: 150 },
-            { field: 'collectedVal', headerName: 'Collected Value', width: 150 },
-            { field: 'GTIN13', headerName: 'GTIN13', width: 150 },
+            { field: "UID", headerName: "UID", width: 150 },
+            { field: "SRCC", headerName: "SRCC", width: 150 },
+            { field: "MATNR", headerName: "MATNR", width: 150 },
+            { field: "QTY", headerName: "QTY", width: 150 },
+            { field: "GTIN13", headerName: "GTIN13", width: 150 },
           ]}
           rows={data.map((item, index) => ({ id: index, ...item }))}
+          autoHeight
         />
       </Box>
       <Button

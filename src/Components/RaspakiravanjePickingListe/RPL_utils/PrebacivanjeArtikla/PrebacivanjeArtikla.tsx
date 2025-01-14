@@ -1,34 +1,83 @@
 import { Box, Container, Typography, Button } from "@mui/material";
 import { PrebacivanjeArtiklaHeader } from "./PrebacivanjeArtiklaHeader";
-import { DataGrid, GridRowsProp, GridColDef } from "@mui/x-data-grid";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { useEffect, useState } from "react";
+import useBarcodeScannerStore from "../../../useBarcodeScannerStore";
+
+interface Kontejner {
+  UID: string;
+  SRCC: string;
+  QTY: string;
+  MATNR: string;
+}
 
 export default function PrebacivanjeArtikla() {
-  const rows: GridRowsProp = [
-    { id: 1, MATNR: "Some", col2: "In" },
-    { id: 2, MATNR: "Frikin", col2: "Data" },
-    { id: 3, MATNR: "Data", col2: "Grid" },
-  ];
+  const [destKontejner, setDestKontejner] = useState<string | null>(null);
+  const { startReading, receivedData } = useBarcodeScannerStore();
+  const [srcKontejner, setSrcKontejner] = useState<string | null>(null);
+  const [rows, setRows] = useState<Kontejner[]>([]);
+  const [rowsDest, setRowsDest] = useState<Kontejner[]>([]);
 
-  const handleButtonClick = (params: any) => {
-    alert(`Button clicked for row with ID: ${params.id}`);
+  useEffect(() => {
+    startReading();
+    console.log("Received data:", receivedData);
+    const keys = Object.keys(localStorage).filter((key) =>
+      key.startsWith("NoviKarton_")
+    );
+
+    if (keys.length > 0) {
+      const latestKey = keys[keys.length - 1];
+      const storedValue = localStorage.getItem(latestKey);
+      setDestKontejner(storedValue);
+    }
+
+    const SRCkontejner = receivedData;
+    setSrcKontejner(SRCkontejner);
+  }, []);
+
+  useEffect(() => {
+    fetch("/Artikli.json")
+      .then((response) => response.json())
+      .then((data: Kontejner[]) => {
+        const mappedData = data.map((item: Kontejner) => ({
+          UID: item.UID,
+          SRCC: item.SRCC,
+          MATNR: item.MATNR,
+          QTY: item.QTY,
+        }));
+        setRows(mappedData);
+        setRowsDest([]);
+      });
+  }, []);
+
+  const handleTransferRow = (row: Kontejner) => {
+    const updatedRows = rows.filter((item) => item.UID !== row.UID);
+    setRows(updatedRows);
+    setRowsDest((prevRows) => [...prevRows, row]);
   };
 
   const columns: GridColDef[] = [
     { field: "MATNR", headerName: "MATNR", width: 300 },
+    { field: "QTY", headerName: "QTY", width: 300 },
     {
       field: "actions",
       headerName: "Actions",
-      width: 300,
+      width: 200,
       renderCell: (params) => (
         <Button
           variant="contained"
           color="primary"
-          onClick={() => handleButtonClick(params)}
+          onClick={() => handleTransferRow(params.row)}
         >
-          Ručno dodavanje
+          Prebacivanje
         </Button>
       ),
     },
+  ];
+
+  const columns1: GridColDef[] = [
+    { field: "MATNR", headerName: "MATNR", width: 300 },
+    { field: "QTY", headerName: "QTY", width: 300 },
   ];
 
   return (
@@ -43,15 +92,19 @@ export default function PrebacivanjeArtikla() {
       <PrebacivanjeArtiklaHeader />
       <Box>
         <Typography variant="h4" sx={{ marginTop: 10 }}>
-          SRC Kontejner
+          SRC Kontejner: {srcKontejner}
         </Typography>
-        <DataGrid rows={rows} columns={columns} />
+        <DataGrid rows={rows} columns={columns} getRowId={(row) => row.UID} />
       </Box>
       <Box>
-        <Typography variant="h4" sx={{ width: "auto" }}>
-          DEST Kontejner
+        <Typography variant="h4" sx={{ width: "auto", marginTop: 5 }}>
+          DEST Kontejner: {destKontejner ? destKontejner : "No data found"}
         </Typography>
-        <DataGrid rows={rows} columns={columns} />
+        <DataGrid
+          rows={rowsDest}
+          columns={columns1}
+          getRowId={(row) => row.UID}
+        />
       </Box>
     </Container>
   );

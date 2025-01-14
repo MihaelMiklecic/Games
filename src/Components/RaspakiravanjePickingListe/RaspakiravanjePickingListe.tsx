@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { Container, Button, Chip, Dialog, DialogContent } from "@mui/material";
+import { Container, Button,  Dialog, DialogContent } from "@mui/material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { RPL_Header } from "./RPL_utils/RPL_Header";
 import useBarcodeScannerStore from "../useBarcodeScannerStore";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
-
 interface Data {
   DOCID: string;
   DOCNAME: string;
   SRCC: string;
+  UID: string;
 }
 
 export const RaspakiravanjePickingListe = () => {
@@ -20,7 +20,9 @@ export const RaspakiravanjePickingListe = () => {
   const [, setSelectedRow] = useState<Data | null>(null);
   const navigate = useNavigate();
 
-  const prebacivanjeNaListuKartona = () => {
+  const prebacivanjeNaListuKartona = ( ) => {
+    localStorage.setItem(`ParentID${data[1].DOCID}` , data[1].UID);
+    console.log("Setted ParentID in localStorage: ", data[1].UID);
     navigate("/lista-kartona");
   };
 
@@ -56,14 +58,9 @@ export const RaspakiravanjePickingListe = () => {
   }, [receivedData, data]);
 
   const columns: GridColDef[] = [
-    { field: "DOCID", headerName: "DOCID", width: 200 },
-    { field: "DOCNAME", headerName: "DOCNAME", width: 300 },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 150,
-      renderCell: () => <Chip />,
-    },
+    { field: "DOCID", headerName: "DOCID", width: 100 },
+    { field: "DOCNAME", headerName: "DOCNAME", width: 200 },
+    { field: "SRCC", headerName: "SRCC", width: 100 },
     {
       field: "actions",
       headerName: "Akcije",

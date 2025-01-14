@@ -17,7 +17,8 @@ export default function KreiranjeKartona() {
     useBarcodeScannerStore();
   const navigate = useNavigate();
 
-  const nextPage = () => {
+  const handleKreiraj = () => {
+    localStorage.setItem(`NoviKarton_${receivedData}_${dropdown1}`, `${receivedData}_${dropdown1}`);
     navigate("/skeniranje-src");
   };
   useEffect(() => {
@@ -64,13 +65,12 @@ export default function KreiranjeKartona() {
       </Typography>
       <TextField fullWidth disabled value={receivedData}></TextField>
       <Typography sx={{ marginTop: 5 }}>Skenirani/uneseni SSCC kod</Typography>
-      <TextField fullWidth disabled></TextField>
+      <TextField fullWidth disabled value={receivedData}></TextField>
       <Button
         variant="contained"
-        onClick={nextPage}
+        onClick={handleKreiraj}
         sx={{ position: "absolute", bottom: 0, width: "100%", height: "60px" }}
       >
-        {" "}
         kreiraj
       </Button>
     </Container>
