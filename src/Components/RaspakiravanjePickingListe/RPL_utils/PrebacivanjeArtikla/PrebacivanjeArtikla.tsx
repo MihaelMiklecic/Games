@@ -1,4 +1,4 @@
-import { Box, Container, Typography, Button } from "@mui/material";
+import { Box, Container, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { PrebacivanjeArtiklaHeader } from "./PrebacivanjeArtiklaHeader";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
@@ -7,7 +7,7 @@ import useBarcodeScannerStore from "../../../useBarcodeScannerStore";
 interface Kontejner {
   UID: string;
   SRCC: string;
-  QTY: string;
+  QTY: number;
   MATNR: string;
 }
 
@@ -17,6 +17,9 @@ export default function PrebacivanjeArtikla() {
   const [srcKontejner, setSrcKontejner] = useState<string | null>(null);
   const [rows, setRows] = useState<Kontejner[]>([]);
   const [rowsDest, setRowsDest] = useState<Kontejner[]>([]);
+  const [openDialog, setOpenDialog] = useState<boolean>(false); // To control the dialog visibility
+  const [selectedRow, setSelectedRow] = useState<Kontejner | null>(null); // To store selected row
+  const [transferQty, setTransferQty] = useState<number>(0); // To store the quantity to transfer
 
   useEffect(() => {
     startReading();
@@ -50,10 +53,43 @@ export default function PrebacivanjeArtikla() {
       });
   }, []);
 
-  const handleTransferRow = (row: Kontejner) => {
-    const updatedRows = rows.filter((item) => item.UID !== row.UID);
-    setRows(updatedRows);
-    setRowsDest((prevRows) => [...prevRows, row]);
+  const handleOpenDialog = (row: Kontejner) => {
+    setSelectedRow(row);
+    setTransferQty(0); 
+    setOpenDialog(true);
+  };
+
+  const handleConfirmTransfer = () => {
+    if (selectedRow) {
+      const updatedRows = rows.map((item) =>
+        item.UID === selectedRow.UID
+          ? { ...item, QTY: item.QTY - transferQty }
+          : item
+      );
+
+      const existingDestRow = rowsDest.find((item) => item.UID === selectedRow.UID);
+      if (existingDestRow) {
+        setRowsDest((prevRows) =>
+          prevRows.map((item) =>
+            item.UID === selectedRow.UID
+              ? { ...item, QTY: item.QTY + transferQty }
+              : item
+          )
+        );
+      } else {
+        setRowsDest((prevRows) => [...prevRows, { ...selectedRow, QTY: transferQty }]);
+      }
+      setRows(updatedRows);
+    }
+    setOpenDialog(false); 
+  };
+
+
+  const handleQtyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(event.target.value);
+    if (value >= 0 && value <= (selectedRow?.QTY || 0)) {
+      setTransferQty(value);
+    }
   };
 
   const columns: GridColDef[] = [
@@ -67,7 +103,7 @@ export default function PrebacivanjeArtikla() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => handleTransferRow(params.row)}
+          onClick={() => handleOpenDialog(params.row)} 
         >
           Prebacivanje
         </Button>
@@ -106,6 +142,35 @@ export default function PrebacivanjeArtikla() {
           getRowId={(row) => row.UID}
         />
       </Box>
+
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Confirm Transfer</DialogTitle>
+        <DialogContent>
+          <Typography>
+            You are about to transfer items from {selectedRow?.MATNR}.
+          </Typography>
+          <TextField
+            label="Quantity to Transfer"
+            type="number"
+            value={transferQty}
+            onChange={handleQtyChange}
+            fullWidth
+            margin="normal"
+            inputProps={{ min: 0 }}
+          />
+          <Typography variant="body2">
+            Available Quantity: {selectedRow?.QTY}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmTransfer} color="primary">
+            Confirm Transfer
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
