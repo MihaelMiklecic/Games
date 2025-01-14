@@ -16,9 +16,17 @@ export default function KreiranjeKartona() {
   const { startReading, receivedData, setReceivedData } =
     useBarcodeScannerStore();
   const navigate = useNavigate();
+  const [manualInputValue, setManualInputValue] = useState<string>(""); 
 
   const handleKreiraj = () => {
-    localStorage.setItem(`NoviKarton_${receivedData}_${dropdown1}`, `${receivedData}_${dropdown1}`);
+    if(receivedData){
+    localStorage.setItem(
+      `NoviKarton_${receivedData}_${dropdown1}`,
+      `${receivedData}_${dropdown1}`
+    );
+    }else {
+      localStorage.setItem(`NoviKarton_${manualInputValue}_${dropdown1}`, `˘${manualInputValue}_${dropdown1}`);
+    }
     navigate("/skeniranje-src");
   };
   useEffect(() => {
@@ -65,7 +73,9 @@ export default function KreiranjeKartona() {
       </Typography>
       <TextField fullWidth disabled value={receivedData}></TextField>
       <Typography sx={{ marginTop: 5 }}>Skenirani/uneseni SSCC kod</Typography>
-      <TextField fullWidth disabled value={receivedData}></TextField>
+      <TextField fullWidth 
+                  value={manualInputValue}
+                  onChange={(e)=>setManualInputValue(e.target.value)} ></TextField>
       <Button
         variant="contained"
         onClick={handleKreiraj}

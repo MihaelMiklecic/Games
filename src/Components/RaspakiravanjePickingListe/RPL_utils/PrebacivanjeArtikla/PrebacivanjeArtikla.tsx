@@ -1,4 +1,14 @@
-import { Box, Container, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
 import { PrebacivanjeArtiklaHeader } from "./PrebacivanjeArtiklaHeader";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
@@ -17,9 +27,9 @@ export default function PrebacivanjeArtikla() {
   const [srcKontejner, setSrcKontejner] = useState<string | null>(null);
   const [rows, setRows] = useState<Kontejner[]>([]);
   const [rowsDest, setRowsDest] = useState<Kontejner[]>([]);
-  const [openDialog, setOpenDialog] = useState<boolean>(false); // To control the dialog visibility
-  const [selectedRow, setSelectedRow] = useState<Kontejner | null>(null); // To store selected row
-  const [transferQty, setTransferQty] = useState<number>(0); // To store the quantity to transfer
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [selectedRow, setSelectedRow] = useState<Kontejner | null>(null);
+  const [transferQty, setTransferQty] = useState<number>(0);
 
   useEffect(() => {
     startReading();
@@ -36,7 +46,7 @@ export default function PrebacivanjeArtikla() {
 
     const SRCkontejner = receivedData;
     setSrcKontejner(SRCkontejner);
-  }, []);
+  }, [receivedData]);
 
   useEffect(() => {
     fetch("/Artikli.json")
@@ -53,9 +63,19 @@ export default function PrebacivanjeArtikla() {
       });
   }, []);
 
+  useEffect(() => {
+    if (destKontejner) {
+      localStorage.setItem("NoviKarton_" + destKontejner, destKontejner);
+    }
+
+    if (rowsDest.length > 0) {
+      localStorage.setItem("RowsDest_" + destKontejner, JSON.stringify(rowsDest));
+    }
+  }, [destKontejner, rowsDest]);
+
   const handleOpenDialog = (row: Kontejner) => {
     setSelectedRow(row);
-    setTransferQty(0); 
+    setTransferQty(0);
     setOpenDialog(true);
   };
 
@@ -67,6 +87,8 @@ export default function PrebacivanjeArtikla() {
           : item
       );
 
+      const rowsAfterTransfer = updatedRows.filter((item) => item.QTY > 0);
+
       const existingDestRow = rowsDest.find((item) => item.UID === selectedRow.UID);
       if (existingDestRow) {
         setRowsDest((prevRows) =>
@@ -77,13 +99,15 @@ export default function PrebacivanjeArtikla() {
           )
         );
       } else {
-        setRowsDest((prevRows) => [...prevRows, { ...selectedRow, QTY: transferQty }]);
+        setRowsDest((prevRows) => [
+          ...prevRows,
+          { ...selectedRow, QTY: transferQty },
+        ]);
       }
-      setRows(updatedRows);
+      setRows(rowsAfterTransfer);
     }
-    setOpenDialog(false); 
+    setOpenDialog(false);
   };
-
 
   const handleQtyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
@@ -103,7 +127,7 @@ export default function PrebacivanjeArtikla() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => handleOpenDialog(params.row)} 
+          onClick={() => handleOpenDialog(params.row)}
         >
           Prebacivanje
         </Button>
@@ -163,10 +187,10 @@ export default function PrebacivanjeArtikla() {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="secondary">
+          <Button onClick={() => setOpenDialog(false)} variant="contained">
             Cancel
           </Button>
-          <Button onClick={handleConfirmTransfer} color="primary">
+          <Button onClick={handleConfirmTransfer} variant="contained">
             Confirm Transfer
           </Button>
         </DialogActions>
