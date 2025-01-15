@@ -20,7 +20,7 @@ interface Kontejner {
   SRCC: string;
   QTY: number;
   MATNR: string;
-  WEIGHT: number;
+  WEIGHT: string;
 }
 
 export default function PrebacivanjeArtikla() {
@@ -33,7 +33,32 @@ export default function PrebacivanjeArtikla() {
   const [selectedRow, setSelectedRow] = useState<Kontejner | null>(null);
   const [transferQty, setTransferQty] = useState<number>(0);
   const { t } = useTranslation();
+  const [totalWeight, setTotalWeight] = useState<number>(0);
+  const [totalWeightDest, setTotalWeightDest] = useState<number>(0);
 
+  useEffect(() => {
+    const calculateTotalWeight = rows.reduce(
+      (acc, row) =>
+        acc + parseFloat(row.WEIGHT.replace(",", ".")) * row.QTY,
+      0
+    );
+    setTotalWeight(calculateTotalWeight);
+    if(calculateTotalWeight > 15){
+      alert("Total weight is over 15kg!");
+    }
+    console.log("Total weight:",calculateTotalWeight)
+  }, [rows]);
+  
+  useEffect(() => {
+    const calculateTotalWeightDest = rowsDest.reduce(
+      (acc, row) =>
+        acc + parseFloat(row.WEIGHT.replace(",", ".")) * row.QTY,
+      0
+    );
+    setTotalWeightDest(calculateTotalWeightDest);
+    console.log("Total weight dest:",calculateTotalWeightDest)
+  }, [rowsDest]);
+  
   useEffect(() => {
     startReading();
     console.log("Received data:", receivedData);
@@ -59,9 +84,9 @@ export default function PrebacivanjeArtikla() {
           UID: item.UID,
           SRCC: item.SRCC,
           MATNR: item.MATNR,
-          QTY: item.QTY, 
+          QTY: item.QTY,
           WEIGHT: item.WEIGHT,
-         TotalWeight: Number("0.1") * item.QTY
+          TotalWeight: parseFloat(item.WEIGHT.replace(",", ".")) * item.QTY,
         }));
         console.log("Mapped data:", mappedData);
         setRows(mappedData);
@@ -69,7 +94,6 @@ export default function PrebacivanjeArtikla() {
       })
       .catch((error) => console.error("Error fetching Artikli.json:", error));
   }, []);
-  
 
   useEffect(() => {
     if (destKontejner) {
@@ -161,9 +185,12 @@ export default function PrebacivanjeArtikla() {
     }
   };
 
-  const handleSave = () =>{
-    localStorage.setItem("NoviKartonArtikli_" + destKontejner, JSON.stringify(rowsDest));
-  }
+  const handleSave = () => {
+    localStorage.setItem(
+      "NoviKartonArtikli_" + destKontejner,
+      JSON.stringify(rowsDest)
+    );
+  };
   const columns: GridColDef[] = [
     { field: "MATNR", headerName: "MATNR", width: 100 },
     { field: "WEIGHT", headerName: "WEIGHT", width: 100 },
@@ -187,7 +214,9 @@ export default function PrebacivanjeArtikla() {
 
   const columns1: GridColDef[] = [
     { field: "MATNR", headerName: "MATNR", width: 100 },
+    { field: "WEIGHT", headerName: "WEIGHT", width: 100 },
     { field: "QTY", headerName: "QTY", width: 100 },
+    { field: "TotalWeight", headerName: "TotalWeight", width: 100 },
     {
       field: "actions",
       headerName: "Actions",
@@ -200,71 +229,73 @@ export default function PrebacivanjeArtikla() {
     },
   ];
 
-  return (<>
-    <Container
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "space-between",
-        gap: 2,
-      }}
-    >
-      <PrebacivanjeArtiklaHeader />
-      <Box>
-        <Typography variant="h4" sx={{ marginTop: 10 }}>
-          SRC {t("kontejner")}: {srcKontejner}
-        </Typography>
-        <DataGrid 
-          rows={rows} 
-          columns={columns} 
-          getRowId={(row) => row.UID} 
-        />
-      </Box>
-      <Box>
-        <Typography variant="h4" sx={{ width: "auto", marginTop: 10 }}>
-          DEST {t("kontejner")}:{" "}
-          {destKontejner ? destKontejner : "No data found"}
-        </Typography>
-        <DataGrid
-          rows={rowsDest}
-          columns={columns1}
-          getRowId={(row) => row.UID}
-        />
-      </Box>
-
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>{t("potvrdi")}</DialogTitle>
-        <DialogContent>
-          <Typography>
-            {t("prebacuj_iz")} {selectedRow?.MATNR}.
+  return (
+    <>
+      <Container
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "space-between",
+          gap: 2,
+        }}
+      >
+        <PrebacivanjeArtiklaHeader />
+        <Box>
+          <Typography variant="h4" sx={{ marginTop: 10 }}>
+            SRC {t("kontejner")}: {srcKontejner}
           </Typography>
-          <TextField
-            label={t("kolicina")}
-            type="number"
-            value={transferQty}
-            onChange={handleQtyChange}
-            fullWidth
-            margin="normal"
-            inputProps={{ min: 1, max: selectedRow?.QTY }}
+          <DataGrid rows={rows} columns={columns} getRowId={(row) => row.UID} 
+            sx={{}}/>
+        </Box>
+        <Box>
+          <Typography variant="h4" sx={{ width: "auto", marginTop: 10 }}>
+            DEST {t("kontejner")}:{" "}
+            {destKontejner ? destKontejner : "No data found"}
+          </Typography>
+          <DataGrid
+            rows={rowsDest}
+            columns={columns1}
+            getRowId={(row) => row.UID}
           />
-          <Typography variant="body2">
-            {t("dostupna_kolicina")} {selectedRow?.QTY}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} variant="contained">
-            {t("odustani")}
-          </Button>
-          <Button onClick={handleConfirmTransfer} variant="contained">
-            {t("potvrdi")}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
-    <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-      <Button variant="contained" onClick={handleSave} >{t("spremi")}</Button>
-    </Box>
+        </Box>
+
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+          <DialogTitle>{t("potvrdi")}</DialogTitle>
+          <DialogContent>
+            <Typography>
+              {t("prebacuj_iz")} {selectedRow?.MATNR}.
+            </Typography>
+            <TextField
+              label={t("kolicina")}
+              type="number"
+              value={transferQty}
+              onChange={handleQtyChange}
+              fullWidth
+              margin="normal"
+              inputProps={{ min: 1, max: selectedRow?.QTY }}
+            />
+            <Typography variant="body2">
+              {t("dostupna_kolicina")} {selectedRow?.QTY}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDialog(false)} variant="contained">
+              {t("odustani")}
+            </Button>
+            <Button onClick={handleConfirmTransfer} variant="contained">
+              {t("potvrdi")}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 2 , gap: 2}}>
+        <Typography>Box  SRC weight: </Typography>
+        <TextField value={totalWeight.toFixed(3)}/>
+        <Button variant="contained" onClick={handleSave}>{t("spremi")}</Button>
+        <Typography>Box  DEST weight: </Typography>
+        <TextField value = {totalWeightDest.toFixed(3)}/>
+      </Box>
     </>
   );
 }
