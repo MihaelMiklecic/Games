@@ -17,7 +17,6 @@ export default function SkeniranjeSRCKontejnera() {
   useEffect(() => {
     if (receivedData) {
       navigate("/prebacivanje-artikla");
-      useBarcodeScannerStore.setState({ receivedData: "" });
     }
   }, [receivedData, navigate]);
 

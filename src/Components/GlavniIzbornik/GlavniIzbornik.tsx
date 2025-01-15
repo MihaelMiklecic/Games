@@ -10,7 +10,7 @@ export const GlavniIzbornik = () => {
     { label: t("otpremnicaButton") },
     { label: t("ispisNaljepniceButton") },
     { label: t("validacijaNalogaButton") },
-    { label: "Raspakiravanje Liste" },
+    { label: t("raspakiravanje_liste") },
     { label: "Button 5" },
     { label: "Button 6" },
     { label: "Button 7" },

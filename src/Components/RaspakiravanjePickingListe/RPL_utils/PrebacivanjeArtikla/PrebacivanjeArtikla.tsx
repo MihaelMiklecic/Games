@@ -8,7 +8,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Chip
+  Chip,
 } from "@mui/material";
 import { PrebacivanjeArtiklaHeader } from "./PrebacivanjeArtiklaHeader";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -39,27 +39,25 @@ export default function PrebacivanjeArtikla() {
 
   useEffect(() => {
     const calculateTotalWeight = rows.reduce(
-      (acc, row) =>
-        acc + parseFloat(row.WEIGHT.replace(",", ".")) * row.QTY,
+      (acc, row) => acc + parseFloat(row.WEIGHT.replace(",", ".")) * row.QTY,
       0
     );
     setTotalWeight(calculateTotalWeight);
-    if(calculateTotalWeight > 15){
+    if (calculateTotalWeight > 15) {
       alert("Total weight is over 15kg!");
     }
-    console.log("Total weight:",calculateTotalWeight)
+    console.log("Total weight:", calculateTotalWeight);
   }, [rows]);
-  
+
   useEffect(() => {
     const calculateTotalWeightDest = rowsDest.reduce(
-      (acc, row) =>
-        acc + parseFloat(row.WEIGHT.replace(",", ".")) * row.QTY,
+      (acc, row) => acc + parseFloat(row.WEIGHT.replace(",", ".")) * row.QTY,
       0
     );
     setTotalWeightDest(calculateTotalWeightDest);
-    console.log("Total weight dest:",calculateTotalWeightDest)
+    console.log("Total weight dest:", calculateTotalWeightDest);
   }, [rowsDest]);
-  
+
   useEffect(() => {
     startReading();
     console.log("Received data:", receivedData);
@@ -246,15 +244,30 @@ export default function PrebacivanjeArtikla() {
           <Typography variant="h4" sx={{ marginTop: 10 }}>
             SRC {t("kontejner")}: {srcKontejner}
           </Typography>
-          <Chip sx={{ backgroundColor: totalWeight > 1.5 ? 'red' : 'lightgreen', width: 35}}/>
-          <DataGrid rows={rows} columns={columns} getRowId={(row) => row.UID} hideFooter/>
+          <Chip
+            sx={{
+              backgroundColor: totalWeight > 1.5 ? "red" : "lightgreen",
+              width: 35,
+            }}
+          />
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            getRowId={(row) => row.UID}
+            hideFooter
+          />
         </Box>
         <Box>
           <Typography variant="h4" sx={{ width: "auto", marginTop: 10 }}>
             DEST {t("kontejner")}:{" "}
             {destKontejner ? destKontejner : "No data found"}
           </Typography>
-          <Chip sx={{ backgroundColor: totalWeightDest > 1.5 ? 'red' : 'lightgreen', width: 35}}/>
+          <Chip
+            sx={{
+              backgroundColor: totalWeightDest > 1.5 ? "red" : "lightgreen",
+              width: 35,
+            }}
+          />
           <DataGrid
             rows={rowsDest}
             columns={columns1}
@@ -292,12 +305,14 @@ export default function PrebacivanjeArtikla() {
           </DialogActions>
         </Dialog>
       </Container>
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 2 , gap: 2}}>
-        <Typography>Box  SRC weight: </Typography>
-        <TextField value={totalWeight.toFixed(3)}/>
-        <Button variant="contained" onClick={handleSave}>{t("spremi")}</Button>
-        <Typography>Box  DEST weight: </Typography>
-        <TextField value = {totalWeightDest.toFixed(3)}/>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 2, gap: 2 }}>
+        <Typography>Box SRC weight: </Typography>
+        <TextField value={totalWeight.toFixed(3)} />
+        <Button variant="contained" onClick={handleSave}>
+          {t("spremi")}
+        </Button>
+        <Typography>Box DEST weight: </Typography>
+        <TextField value={totalWeightDest.toFixed(3)} />
       </Box>
     </>
   );

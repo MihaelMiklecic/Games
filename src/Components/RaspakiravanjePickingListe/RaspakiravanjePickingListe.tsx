@@ -22,7 +22,7 @@ export const RaspakiravanjePickingListe = () => {
   const [selectedRow, setSelectedRow] = useState<Data | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  
+
   const prebacivanjeNaListuKartona = (row: Data) => {
     localStorage.setItem(`ParentID`, row.UID);
     console.log("Setted ParentID in localStorage: ", row.UID);
@@ -89,7 +89,12 @@ export const RaspakiravanjePickingListe = () => {
     >
       <RPL_Header />
       <Box style={{ height: "auto", width: "auto", marginTop: 10 }}>
-        <DataGrid rows={data} columns={columns} getRowId={(row) => row.DOCID}   hideFooter/>
+        <DataGrid
+          rows={data}
+          columns={columns}
+          getRowId={(row) => row.DOCID}
+          hideFooter
+        />
       </Box>
       <Dialog open={openDialog} onClose={closeDialog}>
         <DialogContent>

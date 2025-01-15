@@ -1,4 +1,4 @@
-import WebSocket , {Server} from 'ws';
+import WebSocket, { Server } from 'ws';
 
 const wss = new Server({ port: 5173 });
 

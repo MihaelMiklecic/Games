@@ -1,5 +1,4 @@
 import { Dialog, DialogActions, DialogContent } from "@mui/material";
-import Barcode from "./BarcodeNaljepnica";
 import useBarcodeScannerStore from "../useBarcodeScannerStore";
 import { useEffect } from "react";
 
@@ -18,7 +17,6 @@ const DialogComponent: React.FC<DialogComponentProps> = ({ open, onClose }) => {
     return (
         <Dialog open={open} onClose={onClose}>
             <DialogContent>
-            <Barcode data={barcodeData}/>
             </DialogContent>
             <DialogActions/>
         </Dialog>
