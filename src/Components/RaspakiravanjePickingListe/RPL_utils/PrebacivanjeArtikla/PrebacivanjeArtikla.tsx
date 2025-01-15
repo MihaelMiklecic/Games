@@ -247,7 +247,7 @@ export default function PrebacivanjeArtikla() {
             SRC {t("kontejner")}: {srcKontejner}
           </Typography>
           <Chip sx={{ backgroundColor: totalWeight > 1.5 ? 'red' : 'lightgreen', width: 35}}/>
-          <DataGrid rows={rows} columns={columns} getRowId={(row) => row.UID}/>
+          <DataGrid rows={rows} columns={columns} getRowId={(row) => row.UID} hideFooter/>
         </Box>
         <Box>
           <Typography variant="h4" sx={{ width: "auto", marginTop: 10 }}>
@@ -259,6 +259,7 @@ export default function PrebacivanjeArtikla() {
             rows={rowsDest}
             columns={columns1}
             getRowId={(row) => row.UID}
+            hideFooter
           />
         </Box>
 

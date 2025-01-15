@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Container, Button,  Dialog, DialogContent } from "@mui/material";
+import { Container, Button, Dialog, DialogContent } from "@mui/material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { RPL_Header } from "./RPL_utils/RPL_Header";
 import useBarcodeScannerStore from "../useBarcodeScannerStore";
@@ -19,13 +19,13 @@ export const RaspakiravanjePickingListe = () => {
   const { receivedData } = useBarcodeScannerStore();
   const [, setChipColor] = useState<string>("red");
   const [openDialog, setOpenDialog] = useState(false);
-  const [, setSelectedRow] = useState<Data | null>(null);
+  const [selectedRow, setSelectedRow] = useState<Data | null>(null);
   const navigate = useNavigate();
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   
-  const prebacivanjeNaListuKartona = ( ) => {
-    localStorage.setItem(`ParentID${data[1].DOCID}` , data[1].UID);
-    console.log("Setted ParentID in localStorage: ", data[1].UID);
+  const prebacivanjeNaListuKartona = (row: Data) => {
+    localStorage.setItem(`ParentID`, row.UID);
+    console.log("Setted ParentID in localStorage: ", row.UID);
     navigate("/lista-kartona");
   };
 
@@ -61,9 +61,9 @@ export const RaspakiravanjePickingListe = () => {
   }, [receivedData, data]);
 
   const columns: GridColDef[] = [
-    { field: "DOCID", headerName: "DOCID", width: 100 },
-    { field: "DOCNAME", headerName: "DOCNAME", width: 200 },
-    { field: "SRCC", headerName: "SRCC", width: 100 },
+    { field: "DOCID", headerName: "DOCID", width: 300 },
+    { field: "DOCNAME", headerName: "DOCNAME", width: 300 },
+    { field: "SRCC", headerName: "SRCC", width: 250 },
     {
       field: "actions",
       headerName: t("AKCIJE"),
@@ -88,15 +88,15 @@ export const RaspakiravanjePickingListe = () => {
       }}
     >
       <RPL_Header />
-      <Box style={{ height: 500, width: "100%" }}>
-        <DataGrid rows={data} columns={columns} getRowId={(row) => row.DOCID} />
+      <Box style={{ height: "auto", width: "auto", marginTop: 10 }}>
+        <DataGrid rows={data} columns={columns} getRowId={(row) => row.DOCID}   hideFooter/>
       </Box>
       <Dialog open={openDialog} onClose={closeDialog}>
         <DialogContent>
           <Button
             sx={{ marginRight: 2 }}
             variant="contained"
-            onClick={prebacivanjeNaListuKartona}
+            onClick={() => prebacivanjeNaListuKartona(selectedRow!)}
           >
             Raspakiraj
           </Button>

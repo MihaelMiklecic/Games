@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 
 interface Data {
   ParentID: string;
+  DOCID: string;
   UID: string;
   SRCC: string;
   QTY: string;
@@ -21,29 +22,33 @@ export default function ListaKartona() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    const UIDdata = localStorage.getItem("ParentID64429942");
+    const storedParentID = Object.keys(localStorage).find(key =>
+      key.startsWith("ParentID")
+    );
+    console.log("Stored ParentID:", storedParentID);
+    if (storedParentID) {
+      const UIDdata = localStorage.getItem(storedParentID); 
 
-    if (UIDdata) {
-      fetch("/ListaArtikala.json")
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          const filteredData = data.filter((item: any) => item.ParentID === UIDdata);
-          const mappedData = filteredData.map((item: any) => ({
-            UID: item.UID,
-            SRCC: item.SRCC,
-            MATNR: item.MATNR,
-            QTY: item.QTY,
-            GTIN13: item.GTIN13 || "0",
-          }));
-          setFetchedData(mappedData);
-          localStorage.setItem(`kartoni_${UIDdata}`, JSON.stringify(mappedData));
-        })
-        .catch((error) => console.error("Error fetching data:", error));
+      if (UIDdata) {
+        fetch("/ListaArtikala.json")
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            const filteredData = data.filter((item: any) => item.ParentID === UIDdata);
+            const mappedData = filteredData.map((item: any) => ({
+              ParentID: item.ParentID,
+              DOCID: item.DOCID,
+              SRCC: item.SRCC,
+              MATNR: item.MATNR,
+              QTY: item.QTY,
+              GTIN13: item.GTIN13 || "0",
+            }));
+            setFetchedData(mappedData);
+            localStorage.setItem(`kartoni_${UIDdata}`, JSON.stringify(mappedData));
+          })
+          .catch((error) => console.error("Error fetching data:", error));
+      }
     }
   }, []);
 
@@ -77,27 +82,27 @@ export default function ListaKartona() {
     >
       <ListaKartonaHeader />
       <Box>
-      <Typography>Originalne Kutije:</Typography>
+        <Typography>Originalne Kutije:</Typography>
         <DataGrid
           columns={[
-            { field: "UID", headerName: "UID", width: 150 },
-            { field: "SRCC", headerName: "SRCC", width: 150 },
-
+            { field: "DOCID", headerName: "DOCID", width: 300 },
+            { field: "SRCC", headerName: "SRCC", width: 300 },
           ]}
           rows={fetchedData.map((item, index) => ({ id: index, ...item }))}
           autoHeight
+          hideFooter
         />
       </Box>
       <Box sx={{ marginTop: 10 }}>
         <Typography>Nove Kutije:</Typography>
         <DataGrid
           columns={[
-            { field: "UID", headerName: "UID", width: 150 },
-            { field: "SRCC", headerName: "SRCC", width: 150 },
-
+            { field: "DOCID", headerName: "DOCID", width: 300 },
+            { field: "SRCC", headerName: "SRCC", width: 300 },
           ]}
           rows={localStorageData.map((item, index) => ({ id: index, ...item }))}
           autoHeight
+          hideFooter
         />
       </Box>
       <Button
