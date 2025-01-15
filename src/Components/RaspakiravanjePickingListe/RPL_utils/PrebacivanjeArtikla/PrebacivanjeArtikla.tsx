@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Chip
 } from "@mui/material";
 import { PrebacivanjeArtiklaHeader } from "./PrebacivanjeArtiklaHeader";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -245,14 +246,15 @@ export default function PrebacivanjeArtikla() {
           <Typography variant="h4" sx={{ marginTop: 10 }}>
             SRC {t("kontejner")}: {srcKontejner}
           </Typography>
-          <DataGrid rows={rows} columns={columns} getRowId={(row) => row.UID} 
-            sx={{}}/>
+          <Chip sx={{ backgroundColor: totalWeight > 1.5 ? 'red' : 'lightgreen', width: 35}}/>
+          <DataGrid rows={rows} columns={columns} getRowId={(row) => row.UID}/>
         </Box>
         <Box>
           <Typography variant="h4" sx={{ width: "auto", marginTop: 10 }}>
             DEST {t("kontejner")}:{" "}
             {destKontejner ? destKontejner : "No data found"}
           </Typography>
+          <Chip sx={{ backgroundColor: totalWeightDest > 1.5 ? 'red' : 'lightgreen', width: 35}}/>
           <DataGrid
             rows={rowsDest}
             columns={columns1}

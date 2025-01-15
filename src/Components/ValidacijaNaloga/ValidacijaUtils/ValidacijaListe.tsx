@@ -31,7 +31,6 @@ interface Data {
   GTIN13: boolean | string;
 }
 
-const LOCAL_STORAGE_KEY = "tablicaOtpremniceData";
 
 export const TablicaOtpremnice = () => {
   const [data, setData] = useState<Data[]>([]);
@@ -43,7 +42,8 @@ export const TablicaOtpremnice = () => {
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
   const [mismatchedRows, setMismatchedRows] = useState<Data[]>([]);
-
+  const LOCAL_STORAGE_KEY = `tablicaOtpremnice${docId}`;
+  
   const acceptValidation = () => {
     navigate("/validacija-naloga");
   };

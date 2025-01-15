@@ -1,13 +1,26 @@
-import { Button, Container } from "@mui/material";
+import { Button, Container, CircularProgress } from "@mui/material";
 import { SSRCHeader } from "./SSRCHeader";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import useBarcodeScannerStore from "../../../useBarcodeScannerStore";
 
 export default function SkeniranjeSRCKontejnera() {
   const navigate = useNavigate();
+  const [showLoading, setShowLoading] = useState(false);
+  const { receivedData, startReading } = useBarcodeScannerStore();
 
-  const nextPage = () => {
-    navigate("/prebacivanje-artikla");
+  const handleScan = () => {
+    setShowLoading(true);
+    startReading();
   };
+
+  useEffect(() => {
+    if (receivedData) {
+      navigate("/prebacivanje-artikla");
+      useBarcodeScannerStore.setState({ receivedData: "" });
+    }
+  }, [receivedData, navigate]);
+
   return (
     <Container
       sx={{
@@ -18,13 +31,17 @@ export default function SkeniranjeSRCKontejnera() {
       }}
     >
       <SSRCHeader />
-      <Button
-        variant="contained"
-        onClick={nextPage}
-        sx={{ marginTop: "25%", width: "250px", height: "250px" }}
-      >
-        skeniraj src kontejner
-      </Button>
+      {showLoading ? (
+        <CircularProgress />
+      ) : (
+        <Button
+          variant="contained"
+          onClick={handleScan}
+          sx={{ marginTop: "25%", width: "250px", height: "250px" }}
+        >
+          skeniraj src kontejner
+        </Button>
+      )}
     </Container>
   );
 }

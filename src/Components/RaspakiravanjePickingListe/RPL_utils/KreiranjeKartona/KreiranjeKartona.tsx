@@ -27,7 +27,7 @@ export default function KreiranjeKartona() {
       `${receivedData}_${dropdown1}`
     );
     }else {
-      localStorage.setItem(`NoviKarton_${manualInputValue}_${dropdown1}`, `˘${manualInputValue}_${dropdown1}`);
+      localStorage.setItem(`NoviKarton_${manualInputValue}_${dropdown1}`, `${manualInputValue}_${dropdown1}`);
     }
     navigate("/skeniranje-src");
   };

@@ -1,9 +1,10 @@
-import { Container, Button, Box } from "@mui/material";
+import { Container, Button, Box, Typography } from "@mui/material";
 import { ListaKartonaHeader } from "./ListaKartonaHeader";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
+
 interface Data {
   ParentID: string;
   UID: string;
@@ -14,13 +15,13 @@ interface Data {
 }
 
 export default function ListaKartona() {
-  const [data, setData] = useState<Data[]>([]);
+  const [fetchedData, setFetchedData] = useState<Data[]>([]);
+  const [localStorageData, setLocalStorageData] = useState<Data[]>([]);
   const navigate = useNavigate();
-  const {t} = useTranslation();
-  
+  const { t } = useTranslation();
+
   useEffect(() => {
     const UIDdata = localStorage.getItem("ParentID64429942");
-    console.log("ParentID from localStorage: ", UIDdata);
 
     if (UIDdata) {
       fetch("/ListaArtikala.json")
@@ -30,8 +31,8 @@ export default function ListaKartona() {
           }
           return response.json();
         })
-        .then((fetchedData) => {
-          const filteredData = fetchedData.filter((item: any) => item.ParentID === UIDdata);
+        .then((data) => {
+          const filteredData = data.filter((item: any) => item.ParentID === UIDdata);
           const mappedData = filteredData.map((item: any) => ({
             UID: item.UID,
             SRCC: item.SRCC,
@@ -39,10 +40,25 @@ export default function ListaKartona() {
             QTY: item.QTY,
             GTIN13: item.GTIN13 || "0",
           }));
-          setData(mappedData);
+          setFetchedData(mappedData);
           localStorage.setItem(`kartoni_${UIDdata}`, JSON.stringify(mappedData));
         })
         .catch((error) => console.error("Error fetching data:", error));
+    }
+  }, []);
+
+  useEffect(() => {
+    const storedData = Object.keys(localStorage).filter((key) =>
+      key.startsWith("NoviKartonArtikli_")
+    );
+
+    if (storedData) {
+      try {
+        const parsedData: Data[] = storedData.map((key) => JSON.parse(localStorage.getItem(key) || '[]')).flat();
+        setLocalStorageData(parsedData);
+      } catch (error) {
+        console.error("Error parsing localStorage data:", error);
+      }
     }
   }, []);
 
@@ -61,15 +77,26 @@ export default function ListaKartona() {
     >
       <ListaKartonaHeader />
       <Box>
+      <Typography>Originalne Kutije:</Typography>
         <DataGrid
           columns={[
             { field: "UID", headerName: "UID", width: 150 },
             { field: "SRCC", headerName: "SRCC", width: 150 },
-            { field: "MATNR", headerName: "MATNR", width: 150 },
-            { field: "QTY", headerName: "QTY", width: 150 },
-            { field: "GTIN13", headerName: "GTIN13", width: 150 },
+
           ]}
-          rows={data.map((item, index) => ({ id: index, ...item }))}
+          rows={fetchedData.map((item, index) => ({ id: index, ...item }))}
+          autoHeight
+        />
+      </Box>
+      <Box sx={{ marginTop: 10 }}>
+        <Typography>Nove Kutije:</Typography>
+        <DataGrid
+          columns={[
+            { field: "UID", headerName: "UID", width: 150 },
+            { field: "SRCC", headerName: "SRCC", width: 150 },
+
+          ]}
+          rows={localStorageData.map((item, index) => ({ id: index, ...item }))}
           autoHeight
         />
       </Box>

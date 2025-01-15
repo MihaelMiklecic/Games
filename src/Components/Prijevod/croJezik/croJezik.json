@@ -51,5 +51,22 @@
     "skenirano" : "Skenirano",
     "reset" : "Resetirano",
     "resetAll" : "Resetiraj sve",
-    "deleteList" : "Obriši listu"
+    "deleteList" : "Obriši listu",
+    "tip_kutije" : "Odaberi tip kutije",
+    "tip" : "Tip",
+    "sken_ssc" : "Skeniraj SSCC kod",
+    "uneseni_ssc" : "Upiši SSCC kod",
+    "kreiranje_kartona" : "Kreiraj Kutiju",
+    "kreiraj" : "Kreiraj",
+    "kreiraj_novi_karton" : "Kreiraj novu kutiju",
+    "lista_kartona" : "Lista Kutija",
+    "prebacivanje" : "Prebacivanje",
+    "kontejner" : "Kutija",
+    "potvrdi" : "Potvrdi",
+    "prebacuj_iz" : "Prebacujete artikl: ",
+    "kolicina" : "Količina :",
+    "odustani" : "Odustani",
+    "dostupna_kolicina" : "Dostupna količina :",
+    "prebacivanje_artikla" : "Prebacivanje Artikala",
+    "raspakiravanje_liste" : "Raspakiravanje Lista"
 }

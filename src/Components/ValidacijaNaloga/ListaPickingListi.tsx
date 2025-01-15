@@ -28,7 +28,7 @@ export default function FlexGrid() {
   const scannedSRCC = receivedData;
 
   const resetValidation = () => {
-    const resetData = localStorage.getItem("tablicaOtpremniceData");
+    const resetData = localStorage.getItem(`tablicaOtpremnice${selectedDocId}`);
     if (resetData) {
       const parsedResetData = JSON.parse(resetData);
       const updatedData = parsedResetData.map((item: any) => ({
@@ -62,13 +62,13 @@ export default function FlexGrid() {
   }, [scannedSRCC]);
 
   useEffect(() => {
-    const storedData = localStorage.getItem("tablicaOtpremniceData");
+    const storedData = localStorage.getItem(`tablicaOtpremnice${selectedDocId}`);
     if (storedData) {
       const parsedData = JSON.parse(storedData);
       const allValuesMatch = parsedData.every(
-        (item: any) => item.collectedVal === item.QTY
+        (item: any) => item.collectedVal === item.QTY 
       );
-      setChipColor(allValuesMatch ? "green" : "red");
+      setChipColor(allValuesMatch ? "green" : "red");      
     }
   });
 
@@ -107,7 +107,7 @@ export default function FlexGrid() {
     {
       field: "status",
       headerName: t("PROVJERA"),
-      width: 300,
+      width: 250,
       renderCell: () => <Chip color={chipColor} />,
     },
     {
