@@ -11,7 +11,7 @@ export const GlavniIzbornik = () => {
     { label: t("ispisNaljepniceButton") },
     { label: t("validacijaNalogaButton") },
     { label: t("raspakiravanje_liste") },
-    { label: "Button 5" },
+    { label: "Skeniranje Artikala" },
     { label: "Button 6" },
     { label: "Button 7" },
     { label: "Button 8" },

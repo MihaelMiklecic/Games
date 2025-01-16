@@ -11,6 +11,7 @@ import ListaKartona from "./Components/RaspakiravanjePickingListe/RPL_utils/List
 import KreiranjeKartona from "./Components/RaspakiravanjePickingListe/RPL_utils/KreiranjeKartona/KreiranjeKartona";
 import SkeniranjeSRCKontejnera from "./Components/RaspakiravanjePickingListe/RPL_utils/SkeniranjeSRC/SkeniranjeSRCKontejnera";
 import PrebacivanjeArtikla from "./Components/RaspakiravanjePickingListe/RPL_utils/PrebacivanjeArtikla/PrebacivanjeArtikla";
+import SkeniranjeArtikala from "./Components/ArtiklScanTasks/ArtiklScanTasks";
 function App() {
   return (
     <SnackbarProvider maxSnack={1}>
@@ -33,6 +34,7 @@ function App() {
             path="/prebacivanje-artikla"
             element={<PrebacivanjeArtikla />}
           />
+          <Route path="/skeniranje-artikala" element={<SkeniranjeArtikala />} />
         </Routes>
       </Router>
     </SnackbarProvider>

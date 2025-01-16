@@ -98,7 +98,7 @@ export default function LoginDijalog() {
       console.log("Timer started for 10 seconds.");
       setTimeout(() => {
         dialogFunction();
-      }, 10000);
+      }, 5000);
     } catch (error) {
       console.log("Error during serial port connection or reading:", error);
       enqueueSnackbar(t("errorBarcodeScanner"), {

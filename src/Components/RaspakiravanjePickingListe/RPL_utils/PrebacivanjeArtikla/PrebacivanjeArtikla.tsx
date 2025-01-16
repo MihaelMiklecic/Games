@@ -85,9 +85,10 @@ export default function PrebacivanjeArtikla() {
           SRCC: item.SRCC,
           MATNR: item.MATNR,
           QTY: item.QTY,
-          WEIGHT: item.WEIGHT +" kg",
+          WEIGHT: item.WEIGHT + " kg",
           image: item.image,
-          TotalWeight: parseFloat(item.WEIGHT.replace(",", ".")) * item.QTY + " kg",
+          TotalWeight:
+            parseFloat(item.WEIGHT.replace(",", ".")) * item.QTY + " kg",
         }));
         console.log("Mapped data:", mappedData);
         setRows(mappedData);
@@ -119,50 +120,52 @@ export default function PrebacivanjeArtikla() {
     setOpenDialog(true);
   };
 
-  const handleInfoOpen = (row: Kontejner) =>{
+  const handleInfoOpen = (row: Kontejner) => {
     setSelectedRow(row);
     setInfoOpen(true);
-  }
+  };
 
   const handleConfirmTransfer = () => {
-    if (selectedRow) {
-      const updatedRows = rows.map((item) =>
-        item.UID === selectedRow.UID
-          ? { ...item, QTY: item.QTY - transferQty }
-          : item
+    if (!selectedRow) return;
+    const weightToAdd =
+      parseFloat(selectedRow.WEIGHT.replace(",", ".")) * transferQty;
+    const newTotalWeightDest = totalWeightDest + weightToAdd;
+    if (newTotalWeightDest > 1) {
+      alert(
+        "Prebacivanje nije moguće jer bi ukupna težina DEST kontejnera premašila 1kg!"
       );
-
-      const rowsAfterTransfer = updatedRows.filter((item) => item.QTY > 0);
-
-      const existingDestRow = rowsDest.find(
-        (item) => item.UID === selectedRow.UID
-      );
-
-      if (existingDestRow) {
-        setRowsDest((prevRows) =>
-          prevRows.map((item) =>
-            item.UID === selectedRow.UID
-              ? { ...item, QTY: item.QTY + transferQty }
-              : item
-          )
-        );
-      } else {
-        setRowsDest((prevRows) => [
-          ...prevRows,
-          { ...selectedRow, QTY: transferQty },
-        ]);
-      }
-
-      setRows(rowsAfterTransfer);
+      return;
     }
+    const updatedRows = rows.map((item) =>
+      item.UID === selectedRow.UID
+        ? { ...item, QTY: item.QTY - transferQty }
+        : item
+    );
+    const rowsAfterTransfer = updatedRows.filter((item) => item.QTY > 0);
+    const existingDestRow = rowsDest.find(
+      (item) => item.UID === selectedRow.UID
+    );
+    if (existingDestRow) {
+      setRowsDest((prevRows) =>
+        prevRows.map((item) =>
+          item.UID === selectedRow.UID
+            ? { ...item, QTY: item.QTY + transferQty }
+            : item
+        ));
+    } else {
+      setRowsDest((prevRows) => [
+        ...prevRows,
+        { ...selectedRow, QTY: transferQty },
+      ]);}
+    setRows(rowsAfterTransfer);
     setOpenDialog(false);
   };
+
   const handleUndoQtyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
     if (value >= 0 && value <= (selectedRow?.QTY || 0)) {
       setUndoQty(value);
-    }
-  };
+    }};
 
   const handleConfirmUndo = () => {
     if (selectedRow) {
@@ -173,24 +176,19 @@ export default function PrebacivanjeArtikla() {
             : item
         )
         .filter((item) => item.QTY > 0);
-  
+
       const existingSrcRow = rows.find((item) => item.UID === selectedRow.UID);
-  
+
       if (existingSrcRow) {
         setRows((prevRows) =>
           prevRows.map((item) =>
             item.UID === selectedRow.UID
               ? { ...item, QTY: item.QTY + undoQty }
               : item
-          )
-        );
+          ));
       } else {
-        setRows((prevRows) => [
-          ...prevRows,
-          { ...selectedRow, QTY: undoQty },
-        ]);
+        setRows((prevRows) => [...prevRows, { ...selectedRow, QTY: undoQty }]);
       }
-  
       setRowsDest(updatedRowsDest);
     }
     setUndoDialogOpen(false);
@@ -198,20 +196,20 @@ export default function PrebacivanjeArtikla() {
 
   const handleQtyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
-    if (value >= 0 && value <= (selectedRow?.QTY || 0)) {
+    if (value >= 1 && value <= (selectedRow?.QTY || 1)) {
       setTransferQty(value);
-    }
-  };
+    }};
 
   const handleSave = () => {
-    if(totalWeight ||totalWeightDest > 1){
-      alert("Prebacivanje nije moguce jer je totalna tezina prebacivanja veca od 1kg!")
-    } else{
-    localStorage.setItem(
-      "NoviKartonArtikli_" + destKontejner,
-      JSON.stringify(rowsDest)
-    );};
-  };
+    if (totalWeight || totalWeightDest > 1) {
+      alert(
+        "Nije moguće spremiti sadržaje kutije jer je težina kutije pre velika!"
+      );
+    } else {
+      localStorage.setItem(
+        "NoviKartonArtikli_" + destKontejner,
+        JSON.stringify(rowsDest)
+      )}};
   const columns: GridColDef[] = [
     { field: "MATNR", headerName: "MATNR", width: 100 },
     { field: "WEIGHT", headerName: "WEIGHT", width: 75 },
@@ -224,33 +222,32 @@ export default function PrebacivanjeArtikla() {
       renderCell: (params) => (
         <img
           src={params.row.image}
-          style={{width: "100px", height: "auto", objectFit: "cover", borderRadius: "4px"}}
-        />
-      ),
-    },
+          style={{
+            width: "auto",
+            height: "inherit",
+            objectFit: "cover",
+            borderRadius: "4px",
+          }}
+        />)},
     {
       field: "actions",
       headerName: "Actions",
       width: 200,
       renderCell: (params) => (
-        <Box sx={{display: "flex", gap:1}}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => handleOpenDialog(params.row)}
-        >
-          {t("prebacivanje")}
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => handleInfoOpen(params.row)}
-        >
-          info
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handleOpenDialog(params.row)}
+          >{t("prebacivanje")}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => handleInfoOpen(params.row)}
+          >info
+          </Button>
         </Box>
-      ),
-    },
-  ];
+      )}];
 
   const columns1: GridColDef[] = [
     { field: "MATNR", headerName: "MATNR", width: 100 },
@@ -266,24 +263,28 @@ export default function PrebacivanjeArtikla() {
           src={params.row.image}
           style={{ width: "100px", height: "100px" }}
         />
-      ),
-    },
+      )},
     {
       field: "actions",
       headerName: "Actions",
       width: 150,
       renderCell: (params) => (
-        <Box sx={{display: "flex", gap:1, justifyContent:"center"}}>
-        <Button variant="contained" color="primary" onClick={()=>handleOpenUndoDialog(params.row)}>
-          UNDO
-        </Button>
-        <Button variant="contained" onClick={()=>handleInfoOpen(params.row)}>
-          INFO
-        </Button>
+        <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handleOpenUndoDialog(params.row)}
+          >
+            UNDO
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => handleInfoOpen(params.row)}
+          >
+            INFO
+          </Button>
         </Box>
-      ),
-    },
-  ];
+      )}];
 
   return (
     <>
@@ -335,7 +336,6 @@ export default function PrebacivanjeArtikla() {
             />
           </Box>
         </Box>
-
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
           <DialogTitle>{t("potvrdi")}</DialogTitle>
           <DialogContent>
@@ -364,66 +364,67 @@ export default function PrebacivanjeArtikla() {
             </Button>
           </DialogActions>
         </Dialog>
-        
         <Dialog open={infoOpen} onClose={() => setInfoOpen(false)}>
-  <DialogTitle>INFO</DialogTitle>
-  <DialogContent>
-    {selectedRow && (
-      <>
-        <Typography variant="h6">SRCC: {selectedRow.SRCC}</Typography>
-        <Typography variant="h6">QTY: {selectedRow.QTY}</Typography>
-        <Typography variant="h6">MATNR: {selectedRow.MATNR}</Typography>
-        <Typography variant="h6">WEIGHT: {selectedRow.WEIGHT}</Typography>
-        <Box sx={{ marginTop: 2, textAlign: "center" }}>
-          <img
-            src={selectedRow.image}
-            alt={`${selectedRow.MATNR} image`}
-            style={{
-              width: "150px",
-              height: "auto",
-              objectFit: "cover",
-              borderRadius: "4px",
-            }}
-          />
-        </Box>
-      </>
-    )}
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setInfoOpen(false)} variant="contained">
-      {t("close")}
-    </Button>
-  </DialogActions>
-</Dialog>
-<Dialog open={undoDialogOpen} onClose={() => setUndoDialogOpen(false)}>
-  <DialogTitle>{t("Undo Quantity")}</DialogTitle>
-  <DialogContent>
-    <Typography>
-      {t("Returning items for")} {selectedRow?.MATNR}.
-    </Typography>
-    <TextField
-      label={t("Quantity")}
-      type="number"
-      value={undoQty}
-      onChange={handleUndoQtyChange}
-      fullWidth
-      margin="normal"
-      inputProps={{ min: 1, max: selectedRow?.QTY }}
-    />
-    <Typography variant="body2">
-      {t("Available to undo")}: {selectedRow?.QTY}
-    </Typography>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setUndoDialogOpen(false)} variant="contained">
-      {t("Cancel")}
-    </Button>
-    <Button onClick={handleConfirmUndo} variant="contained">
-      {t("Confirm")}
-    </Button>
-  </DialogActions>
-</Dialog>;
-
+          <DialogTitle>INFO</DialogTitle>
+          <DialogContent>
+            {selectedRow && (
+              <>
+                <Typography variant="h6">SRCC: {selectedRow.SRCC}</Typography>
+                <Typography variant="h6">QTY: {selectedRow.QTY}</Typography>
+                <Typography variant="h6">MATNR: {selectedRow.MATNR}</Typography>
+                <Typography variant="h6">
+                  WEIGHT: {selectedRow.WEIGHT}
+                </Typography>
+                <Box sx={{ marginTop: 2, textAlign: "center" }}>
+                  <img
+                    src={selectedRow.image}
+                    alt={`${selectedRow.MATNR} image`}
+                    style={{
+                      width: "150px",
+                      height: "auto",
+                      objectFit: "cover",
+                      borderRadius: "4px",
+                    }}
+                  /></Box></>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setInfoOpen(false)} variant="contained">
+              {t("close")}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog open={undoDialogOpen} onClose={() => setUndoDialogOpen(false)}>
+          <DialogTitle>{t("Undo Quantity")}</DialogTitle>
+          <DialogContent>
+            <Typography>
+              {t("Returning items for")} {selectedRow?.MATNR}.
+            </Typography>
+            <TextField
+              label={t("Quantity")}
+              type="number"
+              value={undoQty}
+              onChange={handleUndoQtyChange}
+              fullWidth
+              margin="normal"
+              inputProps={{ min: 1, max: selectedRow?.QTY }}
+            />
+            <Typography variant="body2">
+              {t("Available to undo")}: {selectedRow?.QTY}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setUndoDialogOpen(false)}
+              variant="contained"
+            >
+              {t("Cancel")}
+            </Button>
+            <Button onClick={handleConfirmUndo} variant="contained">
+              {t("Confirm")}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
       <Box
         sx={{
@@ -439,12 +440,12 @@ export default function PrebacivanjeArtikla() {
         }}
       >
         <Typography>Box SRC weight: </Typography>
-        <TextField value={totalWeight.toFixed(3)} />
+        <TextField value={totalWeight.toFixed(3) + " kg"} />
         <Button variant="contained" onClick={handleSave}>
           {t("spremi")}
         </Button>
         <Typography>Box DEST weight: </Typography>
-        <TextField value={totalWeightDest.toFixed(3)} />
+        <TextField value={totalWeightDest.toFixed(3) + " kg"} />
       </Box>
     </>
   );

@@ -39,6 +39,9 @@ export const ButtonGrid: React.FC<ButtonGridProps> = ({ buttons }) => {
       case "Picking list unloading":
         navigate("/raspakiravanje-liste");
         break;
+      case "Skeniranje Artikala":
+        navigate("/skeniranje-artikala");
+        break;
       default:
         console.log(`${label} ne vodi nikam.`);
     }
