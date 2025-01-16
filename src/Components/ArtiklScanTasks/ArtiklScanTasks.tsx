@@ -3,7 +3,6 @@ import {
   Container,
   Box,
   Typography,
-  Checkbox,
   List,
   ListItem,
   ListItemText,
@@ -11,6 +10,7 @@ import {
 } from "@mui/material";
 import { Divider } from "@mui/material";
 import { ArtiklScanHeader } from "./ArtiklScanUtils/ArtiklScanHeader";
+import useBarcodeScannerStore from "../useBarcodeScannerStore";
 
 interface Artikl {
   BStat: string;
@@ -23,8 +23,12 @@ interface Artikl {
 export default function ArtiklScanTasks() {
   const [artikl, setArtikl] = useState<Artikl | null>(null);
   const [bstat, setBStat] = useState<string>("");
+  const [filteredArtikl, setFilteredArtikl] = useState<Artikl | null>(null);
+  const [scannedData, setScannedData] = useState<string[]>([]);
+  const { receivedData, setReceivedData } = useBarcodeScannerStore();
 
   useEffect(() => {
+    setReceivedData("");
     const storedBStat = localStorage.getItem("artikl");
     if (storedBStat) {
       const parsedBStat = JSON.parse(storedBStat);
@@ -32,6 +36,20 @@ export default function ArtiklScanTasks() {
     }
     console.log("rerendered");
   }, []);
+
+  useEffect(() => {
+    const storeValues = localStorage.getItem("artikl");
+    if (storeValues) {
+      const parsedValues = JSON.parse(storeValues);
+      console.log("Values:", parsedValues);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (receivedData) {
+      setScannedData((prev) => [...new Set([...prev, receivedData])]);
+    }
+  }, [receivedData]);
 
   const handleBStatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBStat(e.target.value);
@@ -57,58 +75,109 @@ export default function ArtiklScanTasks() {
     });
   };
 
+  useEffect(() => {
+    if (artikl) {
+      let newArtikl: Artikl = {} as Artikl;
+      if (bstat.includes("B")) {
+        newArtikl = { ...newArtikl, GTIN13: artikl.GTIN13 };
+      }
+      if (bstat.includes("S")) {
+        newArtikl = { ...newArtikl, SERNUM: artikl.SERNUM };
+      }
+      if (bstat.includes("H")) {
+        newArtikl = { ...newArtikl, BATCH: artikl.BATCH };
+      }
+      if (bstat.includes("C")) {
+        newArtikl = { ...newArtikl, SSCC: artikl.SSCC };
+      }
+      setFilteredArtikl(newArtikl);
+    }
+  }, [bstat, artikl]);
+
   return (
-    <Container>
+    <Container sx={{}}>
       <ArtiklScanHeader />
       <Box>
-        <Typography variant="h4">Artikl: </Typography>
+        <Typography variant="h4">Scan Data of Artikl: </Typography>
       </Box>
       <Box
         sx={{ border: "1px solid black", gap: 1, margin: 1, borderRadius: 1 }}
       >
         <List>
-          {artikl?.GTIN13 && (
+          {filteredArtikl?.GTIN13 && (
             <>
-              <ListItem>
+              <ListItem
+                sx={{
+                  backgroundColor: scannedData.includes(filteredArtikl.GTIN13)
+                    ? "green"
+                    : "inherit",
+                  color: scannedData.includes(filteredArtikl.GTIN13)
+                    ? "white"
+                    : "inherit",
+                }}
+              >
                 <ListItemText primary="GTIN13" />
-                <Checkbox checked={false} />
               </ListItem>
               <Divider />
             </>
           )}
 
-          {artikl?.SERNUM && (
+          {filteredArtikl?.SERNUM && (
             <>
-              <ListItem>
+              <ListItem
+                sx={{
+                  backgroundColor: scannedData.includes("SERNUM")
+                    ? "green"
+                    : "inherit",
+                  color: scannedData.includes("SERNUM") ? "white" : "inherit",
+                }}
+              >
                 <ListItemText primary="SERNUM" />
-                <Checkbox checked={false} />
               </ListItem>
               <Divider />
             </>
           )}
 
-          {artikl?.BATCH && (
+          {filteredArtikl?.BATCH && (
             <>
-              <ListItem>
+              <ListItem
+                sx={{
+                  backgroundColor: scannedData.includes(filteredArtikl.BATCH)
+                    ? "green"
+                    : "inherit",
+                  color: scannedData.includes(filteredArtikl.BATCH)
+                    ? "white"
+                    : "inherit",
+                }}
+              >
                 <ListItemText primary="BATCH" />
-                <Checkbox checked={false} />
               </ListItem>
               <Divider />
             </>
           )}
 
-          {artikl?.SSCC && (
+          {filteredArtikl?.SSCC && (
             <>
-              <ListItem>
+              <ListItem
+                sx={{
+                  backgroundColor: scannedData.includes(filteredArtikl.SSCC)
+                    ? "green"
+                    : "inherit",
+                  color: scannedData.includes(filteredArtikl.SSCC)
+                    ? "white"
+                    : "inherit",
+                }}
+              >
                 <ListItemText primary="SSCC" />
-                <Checkbox checked={false} />
               </ListItem>
             </>
           )}
         </List>
       </Box>
 
-      <Box>
+      <Box
+        sx={{ border: "1px solid black", marginTop: 25, p: 5, borderRadius: 2 }}
+      >
         <input
           type="text"
           value={bstat}
