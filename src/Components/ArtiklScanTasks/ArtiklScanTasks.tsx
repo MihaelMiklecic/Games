@@ -14,9 +14,9 @@ import { ArtiklScanHeader } from "./ArtiklScanUtils/ArtiklScanHeader";
 import useBarcodeScannerStore from "../useBarcodeScannerStore";
 import {parseBarcode} from "gs1-barcode-parser-mod";
 
-interface Artikl {
-  BStat: string;
-  GTIN13: string;
+interface Artikl {          // 00 - SSCC
+  BStat: string;            // 01 - GTIN
+  GTIN13: string;           // 10 - BATCH
   SERNUM: string;
   BATCH: string;
   SSCC: string;
@@ -36,7 +36,7 @@ export default function ArtiklScanTasks() {
 
 
   const testBarcodeParsing = () => {
-    const barcode = "011234567890123410ABC12317250101";
+    const barcode = "011987654321987600XYZ98765432012";
     //console.log("Testing Barcode:", barcode);
  
     try {
@@ -217,6 +217,7 @@ export default function ArtiklScanTasks() {
         sx={{ 
             border: "1px solid black", 
             marginTop: 25, 
+            marginBottom: 10,
             p: 5, 
             borderRadius: 2,
             display: "flex",
