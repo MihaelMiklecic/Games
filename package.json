@@ -13,6 +13,7 @@
     "@mui/styled-engine-sc": "^6.3.1",
     "@mui/x-data-grid": "^7.23.6",
     "country-flag-icons": "^1.5.13",
+    "gs1-barcode-parser-mod": "^1.0.7",
     "i18next": "^24.1.2",
     "material-ui-flags": "^1.2.4",
     "notistack": "^3.0.1",

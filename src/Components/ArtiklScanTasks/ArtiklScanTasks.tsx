@@ -7,15 +7,17 @@ import {
   ListItem,
   ListItemText,
   Button,
+  TextField,
 } from "@mui/material";
 import { Divider } from "@mui/material";
 import { ArtiklScanHeader } from "./ArtiklScanUtils/ArtiklScanHeader";
 import useBarcodeScannerStore from "../useBarcodeScannerStore";
+import {parseBarcode} from "gs1-barcode-parser-mod";
 
 interface Artikl {
   BStat: string;
   GTIN13: string;
-  SERNUM: boolean;
+  SERNUM: string;
   BATCH: string;
   SSCC: string;
 }
@@ -23,9 +25,31 @@ interface Artikl {
 export default function ArtiklScanTasks() {
   const [artikl, setArtikl] = useState<Artikl | null>(null);
   const [bstat, setBStat] = useState<string>("");
+  const [GTIN13, setGTIN13] = useState<string>("");
+  const [SERNUM, setSERNUM] = useState<string>("");
+  const [BATCH, setBATCH] = useState<string>("");
+  const [SSCC, setSSCC] = useState<string>("");
   const [filteredArtikl, setFilteredArtikl] = useState<Artikl | null>(null);
   const [scannedData, setScannedData] = useState<string[]>([]);
   const { receivedData, setReceivedData } = useBarcodeScannerStore();
+
+
+
+  const testBarcodeParsing = () => {
+    const barcode = "011234567890123410ABC12317250101";
+    //console.log("Testing Barcode:", barcode);
+ 
+    try {
+      const parsedData = parseBarcode(barcode);
+      console.log("Parsed Barcode Data:", parsedData);
+    } catch (error) {
+      console.error("Error parsing barcode:", error);
+    }
+  };
+ 
+  useEffect(() => {
+    testBarcodeParsing();
+  }, []);
 
   useEffect(() => {
     setReceivedData("");
@@ -34,7 +58,6 @@ export default function ArtiklScanTasks() {
       const parsedBStat = JSON.parse(storedBStat);
       setArtikl(parsedBStat);
     }
-    console.log("rerendered");
   }, []);
 
   useEffect(() => {
@@ -54,25 +77,40 @@ export default function ArtiklScanTasks() {
   const handleBStatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBStat(e.target.value);
   };
+  const handleGTIN13Change = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setGTIN13(e.target.value);
+  };
+  const handleSERNUMChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSERNUM(e.target.value);
+  };
+  const handleBATCHChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBATCH(e.target.value);
+  };
+  const handleSSCCChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSSCC(e.target.value);
+  };
+  
 
   const handleSubmit = () => {
     localStorage.setItem(
       "artikl",
       JSON.stringify({
         BStat: bstat,
-        GTIN13: "123456789",
-        SERNUM: true,
-        BATCH: "BATCH001",
-        SSCC: "SSCC001",
+        GTIN13: GTIN13,
+        SERNUM: SERNUM,
+        BATCH: BATCH,
+        SSCC: SSCC,
       })
     );
     setArtikl({
       BStat: bstat,
-      GTIN13: "123456789",
-      SERNUM: true,
-      BATCH: "BATCH001",
-      SSCC: "SSCC001",
+      GTIN13: GTIN13,
+      SERNUM: SERNUM,
+      BATCH: BATCH,
+      SSCC: SSCC,
     });
+
+
   };
 
   useEffect(() => {
@@ -185,11 +223,35 @@ export default function ArtiklScanTasks() {
             gap: 2
         }}
       ><Typography variant="h4"> Unesi BStat: </Typography>
-        <input
+        <TextField
           type="text"
           value={bstat}
           onChange={handleBStatChange}
           placeholder="Enter BStat"
+        />
+        <TextField
+          type="text"
+          value={GTIN13}
+          onChange={handleGTIN13Change}
+          placeholder="Enter GTIN13"
+        />
+        <TextField
+          type="text"
+          value={SERNUM}
+          onChange={handleSERNUMChange}
+          placeholder="Enter SERNUM"
+        />
+        <TextField
+          type="text"
+          value={BATCH}
+          onChange={handleBATCHChange}
+          placeholder="Enter BATCH"
+        />
+        <TextField
+          type="text"
+          value={SSCC}
+          onChange={handleSSCCChange}
+          placeholder="Enter SSCC"
         />
         <Button onClick={handleSubmit} variant="contained" color="primary">
           Submit BStat
