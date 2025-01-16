@@ -1,4 +1,4 @@
-import { Button, Container, CircularProgress } from "@mui/material";
+import { Button, Container } from "@mui/material";
 import { SSRCHeader } from "./SSRCHeader";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -12,6 +12,7 @@ export default function SkeniranjeSRCKontejnera() {
   const handleScan = () => {
     setShowLoading(true);
     startReading();
+    navigate("/prebacivanje-artikla");
   };
 
   useEffect(() => {
@@ -30,17 +31,14 @@ export default function SkeniranjeSRCKontejnera() {
       }}
     >
       <SSRCHeader />
-      {showLoading ? (
-        <CircularProgress />
-      ) : (
+      
         <Button
           variant="contained"
           onClick={handleScan}
           sx={{ marginTop: "25%", width: "250px", height: "250px" }}
         >
           skeniraj src kontejner
-        </Button>
-      )}
+    </Button>
     </Container>
   );
 }

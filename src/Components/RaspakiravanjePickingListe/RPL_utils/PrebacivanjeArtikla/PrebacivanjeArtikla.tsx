@@ -22,6 +22,7 @@ interface Kontejner {
   QTY: number;
   MATNR: string;
   WEIGHT: string;
+  image: string;
 }
 
 export default function PrebacivanjeArtikla() {
@@ -36,6 +37,9 @@ export default function PrebacivanjeArtikla() {
   const { t } = useTranslation();
   const [totalWeight, setTotalWeight] = useState<number>(0);
   const [totalWeightDest, setTotalWeightDest] = useState<number>(0);
+  const [infoOpen, setInfoOpen] = useState<boolean>(false);
+  const [undoQty, setUndoQty] = useState<number>(0);
+  const [undoDialogOpen, setUndoDialogOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const calculateTotalWeight = rows.reduce(
@@ -43,9 +47,6 @@ export default function PrebacivanjeArtikla() {
       0
     );
     setTotalWeight(calculateTotalWeight);
-    if (calculateTotalWeight > 15) {
-      alert("Total weight is over 15kg!");
-    }
     console.log("Total weight:", calculateTotalWeight);
   }, [rows]);
 
@@ -84,8 +85,9 @@ export default function PrebacivanjeArtikla() {
           SRCC: item.SRCC,
           MATNR: item.MATNR,
           QTY: item.QTY,
-          WEIGHT: item.WEIGHT,
-          TotalWeight: parseFloat(item.WEIGHT.replace(",", ".")) * item.QTY,
+          WEIGHT: item.WEIGHT +" kg",
+          image: item.image,
+          TotalWeight: parseFloat(item.WEIGHT.replace(",", ".")) * item.QTY + " kg",
         }));
         console.log("Mapped data:", mappedData);
         setRows(mappedData);
@@ -105,12 +107,22 @@ export default function PrebacivanjeArtikla() {
       );
     }
   }, [destKontejner, rowsDest]);
+  const handleOpenUndoDialog = (row: Kontejner) => {
+    setSelectedRow(row);
+    setUndoQty(0);
+    setUndoDialogOpen(true);
+  };
 
   const handleOpenDialog = (row: Kontejner) => {
     setSelectedRow(row);
     setTransferQty(0);
     setOpenDialog(true);
   };
+
+  const handleInfoOpen = (row: Kontejner) =>{
+    setSelectedRow(row);
+    setInfoOpen(true);
+  }
 
   const handleConfirmTransfer = () => {
     if (selectedRow) {
@@ -145,36 +157,43 @@ export default function PrebacivanjeArtikla() {
     }
     setOpenDialog(false);
   };
+  const handleUndoQtyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(event.target.value);
+    if (value >= 0 && value <= (selectedRow?.QTY || 0)) {
+      setUndoQty(value);
+    }
+  };
 
-  const handleUndo = () => {
+  const handleConfirmUndo = () => {
     if (selectedRow) {
       const updatedRowsDest = rowsDest
         .map((item) =>
           item.UID === selectedRow.UID
-            ? { ...item, QTY: item.QTY - transferQty }
+            ? { ...item, QTY: item.QTY - undoQty }
             : item
         )
         .filter((item) => item.QTY > 0);
-
+  
       const existingSrcRow = rows.find((item) => item.UID === selectedRow.UID);
-
+  
       if (existingSrcRow) {
         setRows((prevRows) =>
           prevRows.map((item) =>
             item.UID === selectedRow.UID
-              ? { ...item, QTY: item.QTY + transferQty }
+              ? { ...item, QTY: item.QTY + undoQty }
               : item
           )
         );
       } else {
         setRows((prevRows) => [
           ...prevRows,
-          { ...selectedRow, QTY: transferQty },
+          { ...selectedRow, QTY: undoQty },
         ]);
       }
-
+  
       setRowsDest(updatedRowsDest);
     }
+    setUndoDialogOpen(false);
   };
 
   const handleQtyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,21 +204,36 @@ export default function PrebacivanjeArtikla() {
   };
 
   const handleSave = () => {
+    if(totalWeight ||totalWeightDest > 1){
+      alert("Prebacivanje nije moguce jer je totalna tezina prebacivanja veca od 1kg!")
+    } else{
     localStorage.setItem(
       "NoviKartonArtikli_" + destKontejner,
       JSON.stringify(rowsDest)
-    );
+    );};
   };
   const columns: GridColDef[] = [
     { field: "MATNR", headerName: "MATNR", width: 100 },
-    { field: "WEIGHT", headerName: "WEIGHT", width: 100 },
-    { field: "QTY", headerName: "QTY", width: 100 },
-    { field: "TotalWeight", headerName: "TotalWeight", width: 100 },
+    { field: "WEIGHT", headerName: "WEIGHT", width: 75 },
+    { field: "QTY", headerName: "QTY", width: 50 },
+    { field: "TotalWeight", headerName: "TotalWeight", width: 75 },
+    {
+      field: "image",
+      headerName: "IMAGE",
+      width: 150,
+      renderCell: (params) => (
+        <img
+          src={params.row.image}
+          style={{width: "100px", height: "auto", objectFit: "cover", borderRadius: "4px"}}
+        />
+      ),
+    },
     {
       field: "actions",
       headerName: "Actions",
-      width: 150,
+      width: 200,
       renderCell: (params) => (
+        <Box sx={{display: "flex", gap:1}}>
         <Button
           variant="contained"
           color="primary"
@@ -207,23 +241,46 @@ export default function PrebacivanjeArtikla() {
         >
           {t("prebacivanje")}
         </Button>
+        <Button
+          variant="contained"
+          onClick={() => handleInfoOpen(params.row)}
+        >
+          info
+        </Button>
+        </Box>
       ),
     },
   ];
 
   const columns1: GridColDef[] = [
     { field: "MATNR", headerName: "MATNR", width: 100 },
-    { field: "WEIGHT", headerName: "WEIGHT", width: 100 },
-    { field: "QTY", headerName: "QTY", width: 100 },
-    { field: "TotalWeight", headerName: "TotalWeight", width: 100 },
+    { field: "WEIGHT", headerName: "WEIGHT", width: 75 },
+    { field: "QTY", headerName: "QTY", width: 50 },
+    { field: "TotalWeight", headerName: "TotalWeight", width: 75 },
+    {
+      field: "image",
+      headerName: "IMAGE",
+      width: 200,
+      renderCell: (params) => (
+        <img
+          src={params.row.image}
+          style={{ width: "100px", height: "100px" }}
+        />
+      ),
+    },
     {
       field: "actions",
       headerName: "Actions",
       width: 150,
-      renderCell: () => (
-        <Button variant="contained" color="primary" onClick={handleUndo}>
+      renderCell: (params) => (
+        <Box sx={{display: "flex", gap:1, justifyContent:"center"}}>
+        <Button variant="contained" color="primary" onClick={()=>handleOpenUndoDialog(params.row)}>
           UNDO
         </Button>
+        <Button variant="contained" onClick={()=>handleInfoOpen(params.row)}>
+          INFO
+        </Button>
+        </Box>
       ),
     },
   ];
@@ -240,40 +297,43 @@ export default function PrebacivanjeArtikla() {
         }}
       >
         <PrebacivanjeArtiklaHeader />
-        <Box>
-          <Typography variant="h4" sx={{ marginTop: 10 }}>
-            SRC {t("kontejner")}: {srcKontejner}
-          </Typography>
-          <Chip
-            sx={{
-              backgroundColor: totalWeight > 1.5 ? "red" : "lightgreen",
-              width: 35,
-            }}
-          />
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            getRowId={(row) => row.UID}
-            hideFooter
-          />
-        </Box>
-        <Box>
-          <Typography variant="h4" sx={{ width: "auto", marginTop: 10 }}>
-            DEST {t("kontejner")}:{" "}
-            {destKontejner ? destKontejner : "No data found"}
-          </Typography>
-          <Chip
-            sx={{
-              backgroundColor: totalWeightDest > 1.5 ? "red" : "lightgreen",
-              width: 35,
-            }}
-          />
-          <DataGrid
-            rows={rowsDest}
-            columns={columns1}
-            getRowId={(row) => row.UID}
-            hideFooter
-          />
+        <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+          <Box sx={{ height: "auto" }}>
+            <Typography variant="h4" sx={{ marginTop: 10 }}>
+              SRC {t("kontejner")}: {srcKontejner}
+            </Typography>
+            <Chip
+              sx={{
+                backgroundColor: totalWeight > 1.0 ? "red" : "lightgreen",
+                width: 35,
+              }}
+            />
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              getRowId={(row) => row.UID}
+              hideFooter
+            />
+          </Box>
+          <Box sx={{ height: "auto" }}>
+            <Typography variant="h4" sx={{ width: "auto", marginTop: 10 }}>
+              DEST {t("kontejner")}:{" "}
+              {destKontejner ? destKontejner : "No data found"}
+            </Typography>
+            <Chip
+              sx={{
+                backgroundColor: totalWeightDest > 1.0 ? "red" : "lightgreen",
+                width: 35,
+              }}
+            />
+            <DataGrid
+              rows={rowsDest}
+              columns={columns1}
+              getRowId={(row) => row.UID}
+              hideFooter
+              sx={{ height: "auto" }}
+            />
+          </Box>
         </Box>
 
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
@@ -304,8 +364,80 @@ export default function PrebacivanjeArtikla() {
             </Button>
           </DialogActions>
         </Dialog>
+        
+        <Dialog open={infoOpen} onClose={() => setInfoOpen(false)}>
+  <DialogTitle>INFO</DialogTitle>
+  <DialogContent>
+    {selectedRow && (
+      <>
+        <Typography variant="h6">SRCC: {selectedRow.SRCC}</Typography>
+        <Typography variant="h6">QTY: {selectedRow.QTY}</Typography>
+        <Typography variant="h6">MATNR: {selectedRow.MATNR}</Typography>
+        <Typography variant="h6">WEIGHT: {selectedRow.WEIGHT}</Typography>
+        <Box sx={{ marginTop: 2, textAlign: "center" }}>
+          <img
+            src={selectedRow.image}
+            alt={`${selectedRow.MATNR} image`}
+            style={{
+              width: "150px",
+              height: "auto",
+              objectFit: "cover",
+              borderRadius: "4px",
+            }}
+          />
+        </Box>
+      </>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setInfoOpen(false)} variant="contained">
+      {t("close")}
+    </Button>
+  </DialogActions>
+</Dialog>
+<Dialog open={undoDialogOpen} onClose={() => setUndoDialogOpen(false)}>
+  <DialogTitle>{t("Undo Quantity")}</DialogTitle>
+  <DialogContent>
+    <Typography>
+      {t("Returning items for")} {selectedRow?.MATNR}.
+    </Typography>
+    <TextField
+      label={t("Quantity")}
+      type="number"
+      value={undoQty}
+      onChange={handleUndoQtyChange}
+      fullWidth
+      margin="normal"
+      inputProps={{ min: 1, max: selectedRow?.QTY }}
+    />
+    <Typography variant="body2">
+      {t("Available to undo")}: {selectedRow?.QTY}
+    </Typography>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setUndoDialogOpen(false)} variant="contained">
+      {t("Cancel")}
+    </Button>
+    <Button onClick={handleConfirmUndo} variant="contained">
+      {t("Confirm")}
+    </Button>
+  </DialogActions>
+</Dialog>;
+
       </Container>
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 2, gap: 2 }}>
+      <Box
+        sx={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+          gap: 2,
+          padding: 2,
+          backgroundColor: "white",
+        }}
+      >
         <Typography>Box SRC weight: </Typography>
         <TextField value={totalWeight.toFixed(3)} />
         <Button variant="contained" onClick={handleSave}>
