@@ -176,8 +176,15 @@ export default function ArtiklScanTasks() {
       </Box>
 
       <Box
-        sx={{ border: "1px solid black", marginTop: 25, p: 5, borderRadius: 2 }}
-      >
+        sx={{ 
+            border: "1px solid black", 
+            marginTop: 25, 
+            p: 5, 
+            borderRadius: 2,
+            display: "flex",
+            gap: 2
+        }}
+      ><Typography variant="h4"> Unesi BStat: </Typography>
         <input
           type="text"
           value={bstat}
