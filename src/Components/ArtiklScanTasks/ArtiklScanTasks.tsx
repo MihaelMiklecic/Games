@@ -13,7 +13,6 @@ import { Divider } from "@mui/material";
 import { ArtiklScanHeader } from "./ArtiklScanUtils/ArtiklScanHeader";
 import useBarcodeScannerStore from "../useBarcodeScannerStore";
 import { parseBarcode } from "gs1-barcode-parser-mod";
-
 interface Artikl {
   BStat: string;
   GTIN13: string;
@@ -56,12 +55,13 @@ export default function ArtiklScanTasks() {
           //console.log(`dataTitle ${item.dataTitle}.`);
           //console.log(`data: ${item.data}.`);
           setData( (prev) => [...new Set([...prev, item.data])]);
-          console.log("data", data);
+          //console.log("data", data);
         })
         setParsedData(parsedResult.parsedCodeItems);
       } catch (error) {
         console.error("Error parsing barcode:", error);
-      }      setReceivedData("");
+      }      
+      setReceivedData("");
     }
   }, [receivedData]);
 
@@ -119,7 +119,7 @@ export default function ArtiklScanTasks() {
 
   return (
     <Container sx={{}}>
-      <ArtiklScanHeader />
+       <ArtiklScanHeader />
       <Box>
         <Typography variant="h4">Scan Data of Artikl: </Typography>
       </Box>
@@ -131,10 +131,10 @@ export default function ArtiklScanTasks() {
             <>
               <ListItem
                 sx={{ borderRadius: 1, m: 1, width: "98%",
-                  backgroundColor: (data ?? "").includes(filteredArtikl.GTIN13)
+                  backgroundColor: ((data ?? "").includes(filteredArtikl.GTIN13))
                     ? "green"
                     : "inherit",
-                  color: (data ?? "").includes(filteredArtikl.GTIN13)
+                  color: ((data ?? "").includes(filteredArtikl.GTIN13))
                     ? "white"
                     : "inherit",
                 }}
@@ -183,7 +183,7 @@ export default function ArtiklScanTasks() {
             <>
               <ListItem
                 sx={{borderRadius: 1, m: 1, width: "98%",
-                  backgroundColor: (data ?? "").includes(filteredArtikl.SSCC)
+                  backgroundColor: ((data ?? "").includes(filteredArtikl.SSCC))
                     ? "green"
                     : "inherit",
                   color: (data ?? "").includes(filteredArtikl.SSCC)
