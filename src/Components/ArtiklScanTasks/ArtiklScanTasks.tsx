@@ -12,7 +12,7 @@ import {
 import { Divider } from "@mui/material";
 import { ArtiklScanHeader } from "./ArtiklScanUtils/ArtiklScanHeader";
 import useBarcodeScannerStore from "../useBarcodeScannerStore";
-import { parseBarcode } from "gs1-barcode-parser-mod";
+import { parseBarcode, validateBarcode } from "gs1-barcode-parser-mod";
 import { FormControlLabel } from "@mui/material";
 import { Radio } from "@mui/material";
 import { RadioGroup } from "@mui/material";
@@ -46,7 +46,7 @@ export default function ArtiklScanTasks() {
     if (receivedData) {
       setScannedData((prev) => [...new Set([...prev, receivedData])]);
     }
-    if (receivedData) {
+    if (validateBarcode(receivedData)) {
       try {
         //console.log("Testing Barcode:", receivedData);
         const parsedResult = parseBarcode(receivedData);
@@ -111,6 +111,7 @@ export default function ArtiklScanTasks() {
       SSCC: sscc,
     });
   };
+
   {/*Artikl Filter Prikaz Barkodova Za Skeniranje*/}
   useEffect(() => {
     if (artikl) {
