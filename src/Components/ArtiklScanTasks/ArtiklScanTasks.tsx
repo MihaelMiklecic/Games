@@ -19,7 +19,7 @@ import { parseBarcode } from "gs1-barcode-parser-mod";
 
 interface Artikl {
   BStat: string;
-  GTIN13: string;
+  GTIN: string;
   SSCC: string;
   SERNUM: string | null;
   BATCH: string;
@@ -30,13 +30,13 @@ type ScanMode = "sekvencijski" | "opcijski";
 export default function ArtiklScanTasks() {
   const [artikl, setArtikl] = useState<Artikl | null>(null);
   const [bstat, setBStat] = useState<string>("");
-  const [gtin13, setGtin13] = useState<string>("");
+  const [gtin, setGtin] = useState<string>("");
   const [sscc, setSscc] = useState<string>("");
   const [batch, setBatch] = useState<string>("");
   const [filteredArtikl, setFilteredArtikl] = useState<Artikl | null>(null);
   const { receivedData, setReceivedData } = useBarcodeScannerStore();
   const [scanMode, setScanMode] = useState<ScanMode>("sekvencijski");
-  const [currentStep, setCurrentStep] = useState<keyof Artikl | null>("GTIN13");
+  const [currentStep, setCurrentStep] = useState<keyof Artikl | null>("GTIN");
 
   const [opcijskiScannedData, setOpcijskiScannedData] = useState<Set<string>>(new Set());
   const [sekvencijskiScannedData, setSekvencijskiScannedData] = useState<Set<string>>(new Set());
@@ -44,10 +44,11 @@ export default function ArtiklScanTasks() {
   useEffect(() => {
     if (receivedData) {
       const addScannedData = (barcode: string) => {
-        if (scanMode === "opcijski") {
-          setOpcijskiScannedData((prev) => new Set([...prev, barcode]));
-        } else if (scanMode === "sekvencijski" && currentStep) {
+        if (scanMode === "sekvencijski" && currentStep) {
           setSekvencijskiScannedData((prev) => new Set([...prev, barcode]));
+        }
+        else if (scanMode === "opcijski") {
+          setOpcijskiScannedData((prev) => new Set([...prev, barcode]));
         }
       };
 
@@ -56,16 +57,17 @@ export default function ArtiklScanTasks() {
         console.log("Parsed Barcode Data:", parsedResult);
 
         parsedResult.parsedCodeItems.forEach((item: any) => {
+          if (scanMode === "sekvencijski" && item.dataTitle.replace("/LOT","") === currentStep) {
+            addScannedData(item.data);
+          }
           if (scanMode === "opcijski") {
             addScannedData(item.data);
           }
-          if (scanMode === "sekvencijski" && item.ai === currentStep) {
-            addScannedData(item.data);
-          }
+
         });
 
         if (scanMode === "sekvencijski" && currentStep) {
-          if (currentStep === "GTIN13" && sekvencijskiScannedData.has(gtin13)) {
+          if (currentStep === "GTIN" && sekvencijskiScannedData.has(gtin)) {
             handleNextStep();
           } else if (currentStep === "SSCC" && sekvencijskiScannedData.has(sscc)) {
             handleNextStep();
@@ -82,7 +84,7 @@ export default function ArtiklScanTasks() {
   }, [receivedData, scanMode, currentStep, sekvencijskiScannedData]);
 
   const handleNextStep = () => {
-    const steps = ["GTIN13", "SSCC", "BATCH"] as const;
+    const steps = ["GTIN", "SSCC", "BATCH"] as const;
     const nextIndex = steps.indexOf(currentStep as Exclude<keyof Artikl, "BStat" | "SERNUM">) + 1;
     setCurrentStep(steps[nextIndex] || null);
   };
@@ -90,13 +92,13 @@ export default function ArtiklScanTasks() {
   const handleScanModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newMode = event.target.value as ScanMode;
     setScanMode(newMode);
-    setCurrentStep(newMode === "sekvencijski" ? "GTIN13" : null);
+    setCurrentStep(newMode === "sekvencijski" ? "GTIN" : null);
   };
 
   const handleSubmit = () => {
     const newArtikl = {
       BStat: bstat,
-      GTIN13: gtin13,
+      GTIN: gtin,
       SERNUM: null,
       BATCH: batch,
       SSCC: sscc,
@@ -109,7 +111,7 @@ export default function ArtiklScanTasks() {
     if (artikl) {
       let newArtikl: Artikl = {} as Artikl;
       if (bstat.includes("B"))
-        newArtikl = { ...newArtikl, GTIN13: artikl.GTIN13 };
+        newArtikl = { ...newArtikl, GTIN: artikl.GTIN };
       if (bstat.includes("C"))
         newArtikl = { ...newArtikl, SSCC: artikl.SSCC };
       if (bstat.includes("H"))
@@ -130,7 +132,7 @@ export default function ArtiklScanTasks() {
     const isScanned =
       (scanMode === "opcijski" && opcijskiScannedData.has(value)) ||
       (scanMode === "sekvencijski" &&
-        ((step === "GTIN13" && sekvencijskiScannedData.has(value)) ||
+        ((step === "GTIN" && sekvencijskiScannedData.has(value)) ||
           (step === "SSCC" && sekvencijskiScannedData.has(value)) ||
           (step === "BATCH" && sekvencijskiScannedData.has(value))));
 
@@ -189,7 +191,7 @@ export default function ArtiklScanTasks() {
         }}
       >
         <List>
-          {renderBarcodeItem("GTIN13", filteredArtikl?.GTIN13 ?? null, "GTIN13")}
+          {renderBarcodeItem("GTIN", filteredArtikl?.GTIN ?? null, "GTIN")}
           {renderBarcodeItem("SSCC", filteredArtikl?.SSCC ?? null, "SSCC")}
           {renderBarcodeItem("BATCH", filteredArtikl?.BATCH ?? null, "BATCH")}
           {renderBarcodeItem("SERNUM", filteredArtikl?.SERNUM ?? null, "SERNUM")}
@@ -206,9 +208,9 @@ export default function ArtiklScanTasks() {
         />
         <TextField
           type="text"
-          value={gtin13}
-          onChange={(e) => setGtin13(e.target.value)}
-          placeholder="Enter GTIN13"
+          value={gtin}
+          onChange={(e) => setGtin(e.target.value)}
+          placeholder="Enter GTIN"
         />
         <TextField
           type="text"
@@ -229,3 +231,5 @@ export default function ArtiklScanTasks() {
     </Container>
   );
 }
+
+
