@@ -16,6 +16,7 @@ import {
 import { ArtiklScanHeader } from "./ArtiklScanUtils/ArtiklScanHeader";
 import useBarcodeScannerStore from "../useBarcodeScannerStore";
 import { parseBarcode } from "gs1-barcode-parser-mod";
+import useSendDataToScanner from "../Utilities/useSendDataToScanner";
 
 interface Artikl {
   BStat: string;
@@ -37,9 +38,10 @@ export default function ArtiklScanTasks() {
   const { receivedData, setReceivedData } = useBarcodeScannerStore();
   const [scanMode, setScanMode] = useState<ScanMode>("sekvencijski");
   const [currentStep, setCurrentStep] = useState<keyof Artikl | null>("GTIN");
-
+  const [showBox, setShowBox] = useState(false);
   const [opcijskiScannedData, setOpcijskiScannedData] = useState<Set<string>>(new Set());
   const [sekvencijskiScannedData, setSekvencijskiScannedData] = useState<Set<string>>(new Set());
+  
 
   useEffect(() => {
     if (receivedData) {
@@ -63,7 +65,6 @@ export default function ArtiklScanTasks() {
           if (scanMode === "opcijski") {
             addScannedData(item.data);
           }
-
         });
 
         if (scanMode === "sekvencijski" && currentStep) {
@@ -82,6 +83,21 @@ export default function ArtiklScanTasks() {
       setReceivedData("");
     }
   }, [receivedData, scanMode, currentStep, sekvencijskiScannedData]);
+
+  const areAllFieldsScanned = () => {
+    return (
+      sekvencijskiScannedData.has(gtin) &&
+      sekvencijskiScannedData.has(sscc) &&
+      sekvencijskiScannedData.has(batch) &&
+      (scanMode !== "sekvencijski" || filteredArtikl?.SERNUM === null || (filteredArtikl && sekvencijskiScannedData.has(filteredArtikl.SERNUM)))
+    );
+  };
+
+  useEffect(() => {
+    if (areAllFieldsScanned()) {
+      useSendDataToScanner();
+    }
+  }, [sekvencijskiScannedData, scanMode, filteredArtikl, useSendDataToScanner]);
 
   const handleNextStep = () => {
     const steps = ["GTIN", "SSCC", "BATCH"] as const;
@@ -121,6 +137,8 @@ export default function ArtiklScanTasks() {
       setFilteredArtikl(newArtikl);
     }
   }, [bstat, artikl]);
+
+  const showError = "Error: Value not found";
 
   const renderBarcodeItem = (
     label: string,
@@ -197,8 +215,11 @@ export default function ArtiklScanTasks() {
           {renderBarcodeItem("SERNUM", filteredArtikl?.SERNUM ?? null, "SERNUM")}
         </List>
       </Box>
+      {showBox && (<Box sx={{marginTop: 10}}>
+      <Typography variant="h4" hidden={!showError}>{showError}</Typography>
+      </Box>)}
       <Box
-        sx={{ border: "1px solid black", marginTop: 25, p: 5, borderRadius: 2 }}
+        sx={{ border: "1px solid black", marginTop: 10, p: 5, borderRadius: 2 }}
       >
         <TextField
           type="text"
@@ -231,5 +252,3 @@ export default function ArtiklScanTasks() {
     </Container>
   );
 }
-
-
