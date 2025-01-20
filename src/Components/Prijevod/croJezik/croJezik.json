@@ -68,5 +68,10 @@
     "odustani" : "Odustani",
     "dostupna_kolicina" : "Dostupna količina :",
     "prebacivanje_artikla" : "Prebacivanje Artikala",
-    "raspakiravanje_liste" : "Raspakiravanje Lista"
+    "raspakiravanje_liste" : "Raspakiravanje Lista",
+    "skeniranje_artikla" : "Skeniranje Artikla",
+    "skeniranje_barkodova" : "Skeniraj Barkodove: ",
+    "skeniraj" : "Skeniraj: ",
+    "opcijski" : "Opcionalno",
+    "sekvencijski" : "Sekvencionalno"
 }

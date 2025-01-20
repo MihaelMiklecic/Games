@@ -42,7 +42,7 @@ import {
               component="div"
               sx={{ flexGrow: 1, textAlign: "center" }}
             >
-            Skeniranje Artikla Zadatci
+            {t("skeniranje_artikla")}
             </Typography>
   
             <Typography variant="body1">
