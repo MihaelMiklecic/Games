@@ -17,6 +17,7 @@ import { ArtiklScanHeader } from "./ArtiklScanUtils/ArtiklScanHeader";
 import useBarcodeScannerStore from "../useBarcodeScannerStore";
 import { useTranslation } from "react-i18next";
 import InfoDialog from "../Utilities/InfoDialog";
+import { parseBarcode } from "gs1-barcode-parser-mod";
 
 interface Artikl {
   BStat: string;
@@ -54,13 +55,12 @@ export default function ArtiklScanTasks() {
       .split("")
       .reduce((acc, key) => {
         const fieldKey = bstatMap[key as keyof typeof bstatMap];
-        if (fieldKey) acc[fieldKey] = false; 
+        if (fieldKey) acc[fieldKey] = false;
         return acc;
       }, {} as Record<string, boolean>);
     setMatchedFields(initialMatchedFields);
     setCurrentIndex(0);
   };
-  
 
   const bstatMap: Record<string, keyof Artikl> = {
     B: "GTIN",
@@ -69,6 +69,47 @@ export default function ArtiklScanTasks() {
     H: "BATCH",
     S: "SERNUM",
   };
+
+
+  interface ParsedData {
+    parsedCodeItems: any[];
+  }
+
+  const [parsedData, setParsedData] = useState<ParsedData | null>(null);
+
+  useEffect(() => {
+    if (receivedData) {
+      try {
+        const parsed = parseBarcode(receivedData);
+        console.log("Parsed Data: ", parsed);
+        setParsedData(parsed);
+        setReceivedData(""); 
+      } catch (error) {
+        console.error("Error parsing barcode:", error);
+      }
+    }
+  }, [receivedData]);
+
+  {/*useEffect parsing items*/}
+  useEffect(() => {
+    if (parsedData && parsedData.parsedCodeItems) {
+      parsedData.parsedCodeItems.forEach((item, index) => {
+        console.log(`Parsed Item ${index + 1}:`, item.data);
+  
+        Object.keys(filteredArtikl || {}).forEach((key) => {
+          const fieldValue = filteredArtikl ? filteredArtikl[key as keyof Artikl] : null;
+          if (fieldValue && item.data === fieldValue) {
+            console.log(`Match found: ${key} = ${item.data}`);
+            setMatchedFields((prev) => ({
+              ...prev,
+              [key]: true,
+            }));
+          }
+        });
+      });
+    }
+  }, [parsedData, filteredArtikl]);
+  
 
   useEffect(() => {
     if (bstat) {
@@ -122,14 +163,12 @@ export default function ArtiklScanTasks() {
     const requiredFields = Object.keys(matchedFields);
     const allMatched =
       requiredFields.length > 0 &&
-      requiredFields.every((key) => matchedFields[key]); 
-  
+      requiredFields.every((key) => matchedFields[key]);
+
     if (allMatched) {
       setOpenDialog(true);
     }
   }, [matchedFields]);
-  
-  
 
   const handleBstatChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newBstat = event.target.value.toUpperCase();
@@ -155,7 +194,7 @@ export default function ArtiklScanTasks() {
           m: 1,
           width: "98%",
           backgroundColor: isMatched ? "green" : isActive ? "yellow" : "transparent",
-          color: isMatched ? "white" :  isActive ? "black" : "black",
+          color: isMatched ? "white" : isActive ? "black" : "black",
         }}
       >
         <ListItemText primary={`${label}: ${value}`} />
