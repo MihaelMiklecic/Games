@@ -15,16 +15,14 @@ import {
 } from "@mui/material";
 import { ArtiklScanHeader } from "./ArtiklScanUtils/ArtiklScanHeader";
 import useBarcodeScannerStore from "../useBarcodeScannerStore";
-import { parseBarcode } from "gs1-barcode-parser-mod";
-import useSendDataToScanner from "../Utilities/useSendDataToScanner";
 import { useTranslation } from "react-i18next";
+import InfoDialog from "../Utilities/InfoDialog";
 
 interface Artikl {
   BStat: string;
   GTIN?: string;
   TRGTIN?: string;
   SSCC: string;
-  SERNUM: string | null;
   BATCH: string;
 }
 
@@ -32,172 +30,137 @@ type ScanMode = "sekvencijski" | "opcijski";
 
 export default function ArtiklScanTasks() {
   const [artikl, setArtikl] = useState<Artikl | null>(null);
-  const [bstat, setBStat] = useState<string>("");
-  const [gtin, setGtin] = useState<string>("");
-  const [sscc, setSscc] = useState<string>("");
-  const [batch, setBatch] = useState<string>("");
-  const [trgtin, setTrgtin] = useState<string>("");
-  const [filteredArtikl, setFilteredArtikl] = useState<Artikl | null>(null);
+  const [bstat, setBStat] = useState<string>(""); 
+  const [filteredArtikl, setFilteredArtikl] = useState<Artikl | null>(null); 
   const { receivedData, setReceivedData } = useBarcodeScannerStore();
-  const [scanMode, setScanMode] = useState<ScanMode>("sekvencijski");
+  const [scanMode, setScanMode] = useState<ScanMode>("opcijski");
   const [currentStep, setCurrentStep] = useState<keyof Artikl | null>("GTIN");
-  const [showBox, setShowBox] = useState(false);
-  const [opcijskiScannedData, setOpcijskiScannedData] = useState<Set<string>>(
-    new Set()
-  );
-  const [sekvencijskiScannedData, setSekvencijskiScannedData] = useState<
-    Set<string>
-  >(new Set());
   const { t } = useTranslation();
+  const [openDialog, setOpenDialog] = useState(false);
 
-  useEffect(() => {
-    if (receivedData) {
-      let isValid = false;
-      const addScannedData = (barcode: string) => {
-        if (scanMode === "sekvencijski" && currentStep) {
-          setSekvencijskiScannedData((prev) => new Set([...prev, barcode]));
-          isValid = sekvencijskiScannedData.has(barcode);
-        } else if (scanMode === "opcijski") {
-          setOpcijskiScannedData((prev) => new Set([...prev, barcode]));
-          isValid = true;
-        }
+  const barcodeFields = [
+    { label: "GTIN", key: "GTIN" },
+    { label: "TRGTIN", key: "TRGTIN" },
+    { label: "SSCC", key: "SSCC" },
+    { label: "BATCH", key: "BATCH" },
+    { label: "SERNUM", key: "SERNUM" },
+  ];
 
-        setShowBox(!isValid);
-      };
+  const [matchedFields, setMatchedFields] = useState<Record<string, boolean>>({
+    GTIN: false,
+    TRGTIN: false,
+    SSCC: false,
+    BATCH: false,
+  });
 
-      try {
-        const parsedResult = parseBarcode(receivedData);
-        parsedResult.parsedCodeItems.forEach((item: any) => {
-          const stepToCheck =
-            currentStep === "GTIN" && bstat.includes("T")
-              ? "TRGTIN"
-              : currentStep;
-          if (
-            scanMode === "sekvencijski" &&
-            item.dataTitle.replace("/LOT", "") === stepToCheck
-          ) {
-            addScannedData(item.data);
-          }
-          if (scanMode === "opcijski") {
-            addScannedData(item.data);
-          }
-        });
-
-        if (scanMode === "sekvencijski" && currentStep) {
-          const isGtinScanned =
-            sekvencijskiScannedData.has(gtin) ||
-            sekvencijskiScannedData.has(trgtin);
-          if (
-            (currentStep === "GTIN" && isGtinScanned) ||
-            sekvencijskiScannedData.has(batch) ||
-            sekvencijskiScannedData.has(sscc)
-          ) {
-            handleNextStep();
-          }
-        }
-      } catch (error) {
-        console.error("Error parsing barcode:", error);
-      }
-
-      setReceivedData("");
-    }
-  }, [receivedData, scanMode, currentStep, sekvencijskiScannedData]);
-
-  const areAllFieldsScanned = () => {
-    const isGtinScanned =
-      sekvencijskiScannedData.has(gtin) || sekvencijskiScannedData.has(trgtin);
-    return (
-      isGtinScanned &&
-      sekvencijskiScannedData.has(sscc) &&
-      sekvencijskiScannedData.has(batch) &&
-      (scanMode !== "sekvencijski" ||
-        filteredArtikl?.SERNUM === null ||
-        (filteredArtikl && sekvencijskiScannedData.has(filteredArtikl.SERNUM)))
-    );
+  const resetMatchedFields = () => {
+    setMatchedFields({
+      GTIN: false,
+      TRGTIN: false,
+      SSCC: false,
+      BATCH: false,
+    });
   };
 
-  useEffect(() => {
-    if (areAllFieldsScanned()) {
-      useSendDataToScanner();
-    }
-  }, [sekvencijskiScannedData, scanMode, filteredArtikl, useSendDataToScanner]);
-
-  const handleNextStep = () => {
-    const steps: (keyof Artikl)[] = ["GTIN", "TRGTIN", "SSCC", "BATCH"];
-    if (currentStep) {
-      const nextIndex = steps.indexOf(currentStep) + 1;
-      setCurrentStep(steps[nextIndex] || null);
-    }
-  };
-
-  const handleScanModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newMode = event.target.value as ScanMode;
-    setScanMode(newMode);
-    const startingStep = bstat.includes("T") ? "TRGTIN" : "GTIN";
-    setCurrentStep(newMode === "sekvencijski" ? startingStep : null);
-  };
-
-  const handleSubmit = () => {
-    const newArtikl = {
-      BStat: bstat,
-      GTIN: gtin,
-      TRGTIN: trgtin,
-      SERNUM: null,
-      BATCH: batch,
-      SSCC: sscc,
-    };
-    localStorage.setItem("artikl", JSON.stringify(newArtikl));
-    setArtikl(newArtikl);
-  };
-
-  useEffect(() => {
-    if (artikl) {
-      let newArtikl: Artikl = {} as Artikl;
-      if (bstat.includes("B")) newArtikl = { ...newArtikl, GTIN: artikl.GTIN };
-      if (bstat.includes("T"))
-        newArtikl = { ...newArtikl, TRGTIN: artikl.TRGTIN };
-      if (bstat.includes("C")) newArtikl = { ...newArtikl, SSCC: artikl.SSCC };
-      if (bstat.includes("H"))
-        newArtikl = { ...newArtikl, BATCH: artikl.BATCH };
-      if (bstat.includes("S"))
-        newArtikl = { ...newArtikl, SERNUM: artikl.SERNUM };
-      setFilteredArtikl(newArtikl);
-    }
-  }, [bstat, artikl]);
-
-  const showError = "Error: Value not found";
-
-  const renderBarcodeItem = (
-    label: string,
-    value: string | null,
-    step: keyof Artikl
-  ) => {
+  const renderBarcodeItem = (label: string, value: string | null, isMatched: boolean) => {
     if (!value) return null;
-
-    const isGtinOrTrgtin =
-      step === "GTIN" &&
-      (sekvencijskiScannedData.has(gtin) ||
-        sekvencijskiScannedData.has(trgtin));
-    const isScanned =
-      (scanMode === "opcijski" && opcijskiScannedData.has(value)) ||
-      (scanMode === "sekvencijski" &&
-        (isGtinOrTrgtin || sekvencijskiScannedData.has(value)));
-
     return (
       <ListItem
         sx={{
           borderRadius: 1,
           m: 1,
           width: "98%",
-          backgroundColor: isScanned ? "green" : "white",
-          color: isScanned ? "white" : "black",
+          backgroundColor: isMatched ? "green" : "transparent",
+          color: isMatched ? "white" : "black",
         }}
       >
-        <ListItemText primary={`${label}`} />
+        <ListItemText primary={`${label}: ${value}`} />
         <Divider />
       </ListItem>
     );
   };
+
+  const bstatMap: Record<string, keyof Artikl> = {
+    B: "GTIN",
+    T: "TRGTIN",
+    C: "SSCC",
+    H: "BATCH",
+  };
+
+
+  useEffect(() => {
+    if (!receivedData || !filteredArtikl) return;
+
+    Object.keys(filteredArtikl).forEach((key) => {
+      const fieldValue = filteredArtikl[key as keyof Artikl];
+      if (receivedData === fieldValue) {
+        setMatchedFields((prev) => ({
+          ...prev,
+          [key]: true, 
+        }));
+        setReceivedData("");  
+      }
+    });
+  }, [receivedData, filteredArtikl]);
+
+  useEffect(() => {
+    if (artikl) {
+      let newArtikl: Artikl = {} as Artikl;
+
+      if (bstat.includes("B")) newArtikl.GTIN = artikl.GTIN;
+      if (bstat.includes("T")) newArtikl.TRGTIN = artikl.TRGTIN;
+      if (bstat.includes("C")) newArtikl.SSCC = artikl.SSCC;
+      if (bstat.includes("H")) newArtikl.BATCH = artikl.BATCH;
+
+      setFilteredArtikl(newArtikl); 
+    }
+  }, [bstat, artikl]);
+
+  useEffect(() => {
+    const allMatched = Object.values(matchedFields).every((matched) => matched);
+    if (allMatched) {
+      setOpenDialog(true);
+      resetMatchedFields();
+    }
+  }, [matchedFields]);
+
+  const handleBstatChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newBstat = event.target.value.toUpperCase();
+    setBStat(newBstat);
+  };
+
+  const handleScanModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setScanMode(event.target.value as ScanMode); 
+  };
+
+  const goToNextStep = () => {
+    const fieldKeys = Object.keys(bstatMap) as (keyof Artikl)[];
+
+    const currentIndex = currentStep ? fieldKeys.indexOf(currentStep) : -1;
+
+    if (currentIndex < fieldKeys.length - 1 && matchedFields[currentStep as string]) {
+      const nextFieldKey = fieldKeys[currentIndex + 1];
+      setCurrentStep(nextFieldKey);
+    }
+  };
+
+  useEffect(() => {
+    if (scanMode === "sekvencijski" && currentStep) {
+      if (matchedFields[currentStep as string]) {
+        goToNextStep();
+      }
+    }
+  }, [matchedFields, scanMode, currentStep]);
+
+  const handleSubmitBStat = () => {
+    if (filteredArtikl) {
+      console.log("Submit BStat:", filteredArtikl);
+    }
+  };
+
+  const onCloseDialog = () => {
+    setOpenDialog(false);
+  }
 
   return (
     <Container>
@@ -210,94 +173,68 @@ export default function ArtiklScanTasks() {
           onChange={handleScanModeChange}
           sx={{ marginBottom: 2 }}
         >
-          <FormControlLabel
-            value="opcijski"
-            control={<Radio />}
-            label={t("opcijski")}
-          />
-          <FormControlLabel
-            value="sekvencijski"
-            control={<Radio />}
-            label="Sekvencijski"
-          />
+          <FormControlLabel value="opcijski" control={<Radio />} label={t("opcijski")} />
+          <FormControlLabel value="sekvencijski" control={<Radio />} label="Sekvencijski" />
         </RadioGroup>
         {scanMode === "sekvencijski" && currentStep && (
           <Box sx={{ marginBottom: 2 }}>
             <Typography variant="h6">
-              {t("skeniraj")} <strong>REDOSLJEDOM</strong>
+              {t("skeniraj")} <strong>{currentStep}</strong>
             </Typography>
           </Box>
         )}
       </Box>
-      <Box
-        sx={{
-          gap: 1,
-          margin: 1,
-          borderRadius: 1,
-          boxShadow: "5px 5px 5px 5px lightgray",
-        }}
-      >
+      
+      <Box sx={{ gap: 1, margin: 1, borderRadius: 1, boxShadow: "5px 5px 5px 5px lightgray" }}>
         <List>
-          {renderBarcodeItem("GTIN", filteredArtikl?.GTIN ?? null, "GTIN")}
-          {renderBarcodeItem(
-            "TRGTIN",
-            filteredArtikl?.TRGTIN ?? null,
-            "TRGTIN"
-          )}
-          {renderBarcodeItem("SSCC", filteredArtikl?.SSCC ?? null, "SSCC")}
-          {renderBarcodeItem("BATCH", filteredArtikl?.BATCH ?? null, "BATCH")}
-          {renderBarcodeItem(
-            "SERNUM",
-            filteredArtikl?.SERNUM ?? null,
-            "SERNUM"
-          )}
+          {Object.keys(bstatMap).map((key) => {
+            if (bstat.includes(key)) {
+              const fieldKey = bstatMap[key as keyof typeof bstatMap];
+              const fieldValue = filteredArtikl?.[fieldKey];
+              const label = barcodeFields.find((field) => field.key === fieldKey)?.label;
+              const isMatched = matchedFields[fieldKey] || false;  
+              return label && fieldValue ? renderBarcodeItem(label, fieldValue, isMatched) : null;
+            }
+            return null;
+          })}
         </List>
       </Box>
 
-      {showBox && (
-        <Box sx={{ marginTop: 10 }}>
-          <Typography variant="h4" hidden={!showError}>
-            {showError}
-          </Typography>
-        </Box>
-      )}
-
-      <Box
-        sx={{ border: "1px solid black", marginTop: 10, p: 5, borderRadius: 2 }}
-      >
+      <Box sx={{ border: "1px solid black", marginTop: 10, p: 5, borderRadius: 2 }}>
         <TextField
           type="text"
           value={bstat}
-          onChange={(e) => setBStat(e.target.value)}
+          onChange={handleBstatChange}
           placeholder="Enter BStat"
         />
         <TextField
           type="text"
-          value={gtin}
-          onChange={(e) => setGtin(e.target.value)}
+          value={filteredArtikl?.GTIN ?? ""}
+          onChange={(e) => setFilteredArtikl({ ...filteredArtikl, GTIN: e.target.value })}
           placeholder="Enter GTIN"
         />
         <TextField
           type="text"
-          value={sscc}
-          onChange={(e) => setSscc(e.target.value)}
+          value={filteredArtikl?.SSCC ?? ""}
+          onChange={(e) => setFilteredArtikl({ ...filteredArtikl, SSCC: e.target.value })}
           placeholder="Enter SSCC"
         />
         <TextField
           type="text"
-          value={batch}
-          onChange={(e) => setBatch(e.target.value)}
+          value={filteredArtikl?.BATCH ?? ""}
+          onChange={(e) => setFilteredArtikl({ ...filteredArtikl, BATCH: e.target.value })}
           placeholder="Enter Batch"
         />
         <TextField
           type="text"
-          value={trgtin}
-          onChange={(e) => setTrgtin(e.target.value)}
+          value={filteredArtikl?.TRGTIN ?? ""}
+          onChange={(e) => setFilteredArtikl({ ...filteredArtikl, TRGTIN: e.target.value })}
           placeholder="Enter TRGTIN"
         />
-        <Button onClick={handleSubmit} variant="contained" color="primary">
+        <Button onClick={handleSubmitBStat} variant="contained" color="primary">
           Submit BStat
         </Button>
+        <InfoDialog dialogOpen={openDialog} dialogTitle="INFO" dialogClose={onCloseDialog} type="error"/>
       </Box>
     </Container>
   );
