@@ -1,12 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="32" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 256">
-  <defs>
-    <linearGradient id="scaleGradient" x1="0%" x2="100%" y1="0%" y2="100%">
-      <stop offset="0%" stop-color="#00BFFF"/>
-      <stop offset="100%" stop-color="#FFFFFF"/>
-    </linearGradient>
-  </defs>
-  <path fill="url(#scaleGradient)" d="M200 200 L56 200 L56 170 L200 170 Z"/>
-  <path fill="url(#scaleGradient)" d="M128 50 C130 75, 110 100, 128 120 L128 170 L128 50 Z"/>
-  <circle cx="56" cy="160" r="20" fill="url(#scaleGradient)" />
-  <circle cx="200" cy="160" r="20" fill="url(#scaleGradient)" />
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <!-- Draw the Tic-Tac-Toe grid -->
+  <rect x="50" y="0" width="10" height="200" fill="black"/>
+  <rect x="150" y="0" width="10" height="200" fill="black"/>
+  <rect x="0" y="50" width="200" height="10" fill="black"/>
+  <rect x="0" y="150" width="200" height="10" fill="black"/>
+  
+  <!-- Add X and O markers -->
+  <text x="25" y="40" font-family="Arial" font-size="40" fill="red" text-anchor="middle">X</text>
+  <text x="75" y="40" font-family="Arial" font-size="40" fill="blue" text-anchor="middle">O</text>
+  <text x="125" y="40" font-family="Arial" font-size="40" fill="red" text-anchor="middle">X</text>
+  
+  <text x="25" y="90" font-family="Arial" font-size="40" fill="blue" text-anchor="middle">O</text>
+  <text x="75" y="90" font-family="Arial" font-size="40" fill="red" text-anchor="middle">X</text>
+  <text x="125" y="90" font-family="Arial" font-size="40" fill="blue" text-anchor="middle">O</text>
+  
+  <text x="25" y="140" font-family="Arial" font-size="40" fill="red" text-anchor="middle">X</text>
+  <text x="75" y="140" font-family="Arial" font-size="40" fill="blue" text-anchor="middle">O</text>
+  <text x="125" y="140" font-family="Arial" font-size="40" fill="red" text-anchor="middle">X</text>
 </svg>

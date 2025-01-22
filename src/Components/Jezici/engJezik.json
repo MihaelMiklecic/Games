@@ -1,0 +1,13 @@
+{
+    "naslov" : "Tic-Tac-Toe",
+    "player1name" : "Player 1",
+    "player2name" : "Player 2",
+    "pobjede" : "Wins",
+    "stisniStart" : "Press start button to beign!",
+    "restart" : "New game",
+    "win" : "wins!",
+    "next" : "Next player : ",
+    "start" : "Start",
+    "Igrac" : "Player",
+    "darkMode" : "Dark mode"
+}

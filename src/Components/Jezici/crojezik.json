@@ -1,0 +1,13 @@
+{
+    "naslov" : "Križić Kružić",
+    "player1name" : "Igrać 1",
+    "player2name" : "Igrać 2",
+    "pobjede" : "Pobjede",
+    "stisniStart" : "Pritisnite gumb start za početak!",
+    "restart" : "Nova Igra",
+    "win" : "pobjeđuje!",
+    "next" : "Sljedeći : ",
+    "start" : "Start",
+    "Igrac" : "Igrać",
+    "darkMode" : "Tamni mod"
+}
