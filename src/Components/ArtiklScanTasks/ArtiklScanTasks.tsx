@@ -51,13 +51,11 @@ export default function ArtiklScanTasks() {
   const [matchedFields, setMatchedFields] = useState<Record<string, boolean>>({});
 
   const resetMatchedFields = () => {
-    const initialMatchedFields = bstat
-      .split("")
-      .reduce((acc, key) => {
-        const fieldKey = bstatMap[key as keyof typeof bstatMap];
-        if (fieldKey) acc[fieldKey] = false;
-        return acc;
-      }, {} as Record<string, boolean>);
+    const initialMatchedFields = bstat.split("").reduce((acc, key) => {
+      const fieldKey = bstatMap[key as keyof typeof bstatMap];
+      if (fieldKey) acc[fieldKey] = false;
+      return acc;
+    }, {} as Record<string, boolean>);
     setMatchedFields(initialMatchedFields);
     setCurrentIndex(0);
   };
@@ -70,7 +68,6 @@ export default function ArtiklScanTasks() {
     S: "SERNUM",
   };
 
-
   interface ParsedData {
     parsedCodeItems: any[];
   }
@@ -80,36 +77,15 @@ export default function ArtiklScanTasks() {
   useEffect(() => {
     if (receivedData) {
       try {
-        const parsed = parseBarcode(receivedData);
+        const parsed = parseBarcode(receivedData); 
         console.log("Parsed Data: ", parsed);
         setParsedData(parsed);
-        setReceivedData(""); 
+        setReceivedData("");
       } catch (error) {
         console.error("Error parsing barcode:", error);
       }
     }
   }, [receivedData]);
-
-  {/*useEffect parsing items*/}
-  useEffect(() => {
-    if (parsedData && parsedData.parsedCodeItems) {
-      parsedData.parsedCodeItems.forEach((item, index) => {
-        console.log(`Parsed Item ${index + 1}:`, item.data);
-  
-        Object.keys(filteredArtikl || {}).forEach((key) => {
-          const fieldValue = filteredArtikl ? filteredArtikl[key as keyof Artikl] : null;
-          if (fieldValue && item.data === fieldValue) {
-            console.log(`Match found: ${key} = ${item.data}`);
-            setMatchedFields((prev) => ({
-              ...prev,
-              [key]: true,
-            }));
-          }
-        });
-      });
-    }
-  }, [parsedData, filteredArtikl]);
-  
 
   useEffect(() => {
     if (bstat) {
@@ -126,38 +102,43 @@ export default function ArtiklScanTasks() {
   }, [bstat, artikl]);
 
   useEffect(() => {
-    if (!receivedData || !filteredArtikl || scanMode !== "sekvencijski") return;
-
-    const keys = Object.keys(filteredArtikl);
-    if (currentIndex < keys.length) {
-      const currentKey = keys[currentIndex];
-      const fieldValue = filteredArtikl[currentKey as keyof Artikl];
-
-      if (receivedData === fieldValue) {
-        setMatchedFields((prev) => ({
-          ...prev,
-          [currentKey]: true,
-        }));
-        setReceivedData("");
-        setCurrentIndex((prevIndex) => prevIndex + 1);
-      }
+    if (scanMode === "opcijski" && parsedData && parsedData.parsedCodeItems) {
+      const fieldKeys = filteredArtikl ? Object.keys(filteredArtikl) as (keyof Artikl)[] : [];
+      parsedData.parsedCodeItems.forEach((item) => {
+        fieldKeys.forEach((key) => {
+          const fieldValue = filteredArtikl ? filteredArtikl[key] : "";
+          if (item.data === fieldValue) {
+            setMatchedFields((prev) => ({
+              ...prev,
+              [key]: true,
+            }));
+          }
+        });
+      });
+      setReceivedData(""); 
     }
-  }, [receivedData, filteredArtikl, currentIndex, scanMode]);
+  }, [parsedData, filteredArtikl, scanMode]);
 
   useEffect(() => {
-    if (scanMode === "opcijski" && receivedData && filteredArtikl) {
-      Object.keys(filteredArtikl).forEach((key) => {
-        const fieldValue = filteredArtikl[key as keyof Artikl];
-        if (receivedData === fieldValue) {
+    if (scanMode === "sekvencijski" && parsedData && parsedData.parsedCodeItems) {
+      if (currentIndex < bstat.length) {
+        const currentKey = bstatMap[bstat[currentIndex] as keyof typeof bstatMap];
+        const matchingItem = parsedData.parsedCodeItems.find(
+          (item) => item.data === filteredArtikl?.[currentKey]
+        );
+
+        if (matchingItem) {
+          console.log(`Match found for ${currentKey}: ${matchingItem.data}`);
           setMatchedFields((prev) => ({
             ...prev,
-            [key]: true,
+            [currentKey]: true,
           }));
-          setReceivedData("");
+          setCurrentIndex((prevIndex) => prevIndex + 1);
+          setParsedData(null);
         }
-      });
+      }
     }
-  }, [receivedData, filteredArtikl, scanMode]);
+  }, [parsedData, filteredArtikl, currentIndex, scanMode]);
 
   useEffect(() => {
     const requiredFields = Object.keys(matchedFields);
@@ -193,7 +174,11 @@ export default function ArtiklScanTasks() {
           borderRadius: 1,
           m: 1,
           width: "98%",
-          backgroundColor: isMatched ? "green" : isActive ? "yellow" : "transparent",
+          backgroundColor: isMatched
+            ? "green"
+            : isActive
+            ? "yellow"
+            : "transparent",
           color: isMatched ? "white" : isActive ? "black" : "black",
         }}
       >
@@ -219,19 +204,37 @@ export default function ArtiklScanTasks() {
           onChange={handleScanModeChange}
           sx={{ marginBottom: 2 }}
         >
-          <FormControlLabel value="opcijski" control={<Radio />} label={t("opcijski")} />
-          <FormControlLabel value="sekvencijski" control={<Radio />} label="Sekvencijski" />
+          <FormControlLabel
+            value="opcijski"
+            control={<Radio />}
+            label={t("opcijski")}
+          />
+          <FormControlLabel
+            value="sekvencijski"
+            control={<Radio />}
+            label="Sekvencijski"
+          />
         </RadioGroup>
       </Box>
 
-      <Box sx={{ gap: 1, margin: 1, borderRadius: 1, boxShadow: "5px 5px 5px 5px lightgray" }}>
+      <Box
+        sx={{
+          gap: 1,
+          margin: 1,
+          borderRadius: 1,
+          boxShadow: "5px 5px 5px 5px lightgray",
+        }}
+      >
         <List>
           {bstat.split("").map((key, index) => {
             const fieldKey = bstatMap[key as keyof typeof bstatMap];
             const fieldValue = filteredArtikl?.[fieldKey];
-            const label = barcodeFields.find((field) => field.key === fieldKey)?.label;
+            const label = barcodeFields.find(
+              (field) => field.key === fieldKey
+            )?.label;
             const isMatched = matchedFields[fieldKey] || false;
-            const isActive = scanMode === "sekvencijski" && currentIndex === index;
+            const isActive =
+              scanMode === "sekvencijski" && currentIndex === index;
             return label && fieldValue
               ? renderBarcodeItem(label, fieldValue, isMatched, isActive)
               : null;
@@ -239,7 +242,9 @@ export default function ArtiklScanTasks() {
         </List>
       </Box>
 
-      <Box sx={{ border: "1px solid black", marginTop: 10, p: 5, borderRadius: 2 }}>
+      <Box
+        sx={{ border: "1px solid black", marginTop: 10, p: 5, borderRadius: 2 }}
+      >
         <TextField
           type="text"
           value={bstat}
@@ -252,19 +257,34 @@ export default function ArtiklScanTasks() {
             type="text"
             value={filteredArtikl?.[field.key as keyof Artikl] ?? ""}
             onChange={(e) =>
-              setFilteredArtikl((prev) => ({
-                ...prev,
-                [field.key]: e.target.value,
-              } as Artikl))
+              setFilteredArtikl(
+                (prev) =>
+                  ({
+                    ...prev,
+                    [field.key]: e.target.value,
+                  } as Artikl)
+              )
             }
             placeholder={`Enter ${field.label}`}
           />
         ))}
-        <Button onClick={() => console.log("Submit BStat:", filteredArtikl)} variant="contained" color="primary">
+        <Button
+          onClick={() => console.log("Submit BStat:", filteredArtikl)}
+          variant="contained"
+          color="primary"
+        >
           Submit BStat
         </Button>
-        <InfoDialog dialogOpen={openDialog} dialogTitle="INFO" dialogClose={onCloseDialog} type="error" duration={3000}/>
-        <Typography variant="h6">B: GTIN, T: TRGTIN, C: SSCC, H: BATCH, S: SERNUM</Typography>
+        <InfoDialog
+          dialogOpen={openDialog}
+          dialogTitle="INFO"
+          dialogClose={onCloseDialog}
+          type="error"
+          duration={3000}
+        />
+        <Typography variant="h6">
+          B: GTIN, T: TRGTIN, C: SSCC, H: BATCH, S: SERNUM
+        </Typography>
       </Box>
     </Container>
   );
