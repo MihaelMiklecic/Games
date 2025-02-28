@@ -60,8 +60,8 @@ const TicTacToe = ({ setWinCounts, singlePlayer }: any) => {
   };
 
   return (
-    <Box>
-      <Grid container spacing={1} justifyContent="center">
+    <Box sx={{ backgroundColor: '#f5f5f5', padding: 3, borderRadius: 2, boxShadow: 3 }}>
+      <Grid container spacing={2} justifyContent="center">
         {board.map((cell, index) => (
           <Grid item xs={4} key={index}>
             <Button 
@@ -73,6 +73,13 @@ const TicTacToe = ({ setWinCounts, singlePlayer }: any) => {
                 fontSize: '2rem', 
                 fontWeight: 'bold',
                 color: cell === 'X' ? 'red' : 'blue', 
+                backgroundColor: 'white',
+                borderRadius: 2,
+                '&:hover': {
+                  backgroundColor: '#e0e0e0',
+                  transform: 'scale(1.05)',
+                },
+                transition: 'all 0.2s ease-in-out',
               }}
             >
               {cell}
@@ -80,14 +87,31 @@ const TicTacToe = ({ setWinCounts, singlePlayer }: any) => {
           </Grid>
         ))}
       </Grid>
-      {gameOver && <Typography variant="h6">Game Over! {currentPlayer} Wins!</Typography>}
-      
+      {gameOver && (
+        <Typography 
+          variant="h6" 
+          align="center" 
+          sx={{ marginTop: 2, color: 'green', fontWeight: 'bold' }}
+        >
+          Game Over! {currentPlayer} Wins!
+        </Typography>
+      )}
+
       <Box sx={{ marginTop: 2 }}>
         <Button 
           variant="contained" 
           color="primary" 
           onClick={handleRestart}
-          sx={{ width: '100%' }}
+          sx={{
+            width: '100%', 
+            padding: '15px', 
+            fontSize: '1.1rem', 
+            fontWeight: 'bold', 
+            borderRadius: 3,
+            '&:hover': {
+              backgroundColor: '#1976d2',
+            },
+          }}
         >
           Restart Game
         </Button>

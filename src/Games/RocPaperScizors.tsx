@@ -52,12 +52,12 @@ const RockPaperScissors = () => {
   };
 
   return (
-    <Box sx={{ textAlign: 'center', marginTop: 4 }}>
-      <Typography variant="h3" gutterBottom>
+    <Box sx={{ textAlign: 'center', marginTop: 4, backgroundColor: '#f5f5f5', padding: 4, borderRadius: 2, boxShadow: 3 }}>
+      <Typography variant="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
         Rock, Paper, Scissors
       </Typography>
 
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom sx={{ marginBottom: 4 }}>
         Your Score: {score.player} - Computer's Score: {score.computer}
       </Typography>
 
@@ -66,7 +66,15 @@ const RockPaperScissors = () => {
           <Button
             variant="contained"
             color="primary"
-            sx={{ width: 150, height: 100, fontSize: '1.5rem' }}
+            sx={{
+              width: 150,
+              height: 100,
+              fontSize: '1.5rem',
+              backgroundColor: '#1976d2',
+              '&:hover': {
+                backgroundColor: '#1565c0',
+              },
+            }}
             onClick={() => handleChoice('Rock')}
           >
             Rock
@@ -76,7 +84,15 @@ const RockPaperScissors = () => {
           <Button
             variant="contained"
             color="secondary"
-            sx={{ width: 150, height: 100, fontSize: '1.5rem' }}
+            sx={{
+              width: 150,
+              height: 100,
+              fontSize: '1.5rem',
+              backgroundColor: '#9c27b0',
+              '&:hover': {
+                backgroundColor: '#7b1fa2',
+              },
+            }}
             onClick={() => handleChoice('Paper')}
           >
             Paper
@@ -86,7 +102,15 @@ const RockPaperScissors = () => {
           <Button
             variant="contained"
             color="success"
-            sx={{ width: 150, height: 100, fontSize: '1.5rem' }}
+            sx={{
+              width: 150,
+              height: 100,
+              fontSize: '1.5rem',
+              backgroundColor: '#4caf50',
+              '&:hover': {
+                backgroundColor: '#388e3c',
+              },
+            }}
             onClick={() => handleChoice('Scissors')}
           >
             Scissors
@@ -99,9 +123,11 @@ const RockPaperScissors = () => {
         <Typography variant="h6">Computer's Choice: {computerChoice}</Typography>
       </Box>
 
-      <Card sx={{ maxWidth: 300, margin: 'auto', marginTop: 4 }}>
+      <Card sx={{ maxWidth: 300, margin: 'auto', marginTop: 4, boxShadow: 3, borderRadius: 2 }}>
         <CardContent>
-          <Typography variant="h5">{result}</Typography>
+          <Typography variant="h5" align="center" sx={{ fontWeight: 'bold', color: result.includes('win') ? 'green' : result.includes('lose') ? 'red' : 'gray' }}>
+            {result}
+          </Typography>
         </CardContent>
       </Card>
 
@@ -113,6 +139,16 @@ const RockPaperScissors = () => {
             setPlayerChoice(null);
             setComputerChoice(null);
             setResult('');
+          }}
+          sx={{
+            width: '100%',
+            padding: '15px',
+            fontSize: '1.1rem',
+            fontWeight: 'bold',
+            borderRadius: 3,
+            '&:hover': {
+              backgroundColor: '#1976d2',
+            },
           }}
         >
           Play Again
